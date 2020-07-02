@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <link href="../static/css/sans.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="../static/css/materialize.min.css"  media="screen,projection"/>
+    <link href="../static/css/materialdesignicons.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+
+    <script src="../static/js/angular.min.js"></script>
+    <script src="../static/js/script.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body id="top">
+
+<!-- https://materializecss.com/grid.html -->
+    <nav>
+        <div class="navbar-fixed blue darken-4">
+            <div class="nav-wrapper container">
+                <a href="#" class="brand-logo blue-text text-lighten-5">FEDAL ModBus simulator</a>
+                <div class="right">
+                    <a href="#top"><i class="large material-icons">arrow_upward</i></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div ng-app="myApp" ng-controller="myCtrl" class="container">
+        <div class="row">
+            <div class="col s9">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Регистр</th>
+                            <th>Значение</th>
+                            <th>&nbsp;</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(reg,value) in data">
+                            <td>{{names[$index]}}</td>
+                            <td><input type="text" ng-model="value"></td>
+                            <td><i class="small material-icons" ng-click="setValue(reg, value)">send</i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col s3">
+                <div ng-hide="link" class="valign-wrapper row">
+                    <span class="left">Device is not connected</span>
+                    <i class="medium material-icons right">cloud_off</i>
+                </div>
+                <div ng-show="link" class="valign-wrapper">
+                    <span class="left">Device is connected</span>
+                    <i class="medium material-icons right">cloud_done</i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--JavaScript at end of body for optimized loading-->
+      <script type="text/javascript" src="../static/js/materialize.min.js"></script>
+</body>
+</html>
