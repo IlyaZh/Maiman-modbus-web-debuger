@@ -15,24 +15,15 @@ class ConfigParser:
 
         for device in root.iter("Device"):
             device_model = {}
-            if device.get('name') is not None:
-                device_name = device.get('name')
-            else:
-                device_name = ''
+            device_name = device.get('name', '')
 
-            if device.get('id') is not None:
-                device_id = device.get('id')
-            else:
-                device_id = ''
+            device_id = device.get('id', '')
 
             device_com_delays = {}
 
-            if device.get('stopCommandDelayMs') is not None:
-                device_com_delays['stop_command_delay_ms'] = device.get('stopCommandDelayMs')
-            if device.get('minCommandDelayMs') is not None:
-                device_com_delays['stop_command_min_delay_ms'] = device.get('minCommandDelayMs')
-            if device.get('maxCommandDelayMs') is not None:
-                device_com_delays['stop_command_max_delay_ms'] = device.get('maxCommandDelayMs')
+            device_com_delays['stop_command_delay_ms'] = device.get('stopCommandDelayMs', 50)
+            device_com_delays['stop_command_min_delay_ms'] = device.get('minCommandDelayMs', 50)
+            device_com_delays['stop_command_max_delay_ms'] = device.get('maxCommandDelayMs', 50)
 
             device_model['name'] = device_name
             device_model['id'] = device_id
@@ -55,6 +46,16 @@ class ConfigParser:
                     device_commands[code] = cmd.attrib
 
             device_model['commands'] = device_commands
+
+            device_params = {}
+            params = device.find("Param")
+            if params is not None:
+                for param in params:
+                    min = param.get('min')
+                    max = param.get('max')
+                    value = param.get('value')
+                    real = param.get('real')
+            device_model['params'] = device_params
 
             self.devices[device_id] = device_model
             # self.devices.append(DeviceDataModel(device_model))

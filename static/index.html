@@ -6,16 +6,17 @@
     <link href="../static/css/materialdesignicons.css" type="text/css" rel="stylesheet" media="screen,projection"/>
 
     <script src="../static/js/angular.min.js"></script>
-    <script src="../static/js/script.js"></script>
+    <script src="../static/js/myCtrl.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>M MB S</title>
 </head>
 <body id="top">
 
 <!-- https://materializecss.com/grid.html -->
     <nav>
-        <div class="navbar-fixed blue darken-4">
+        <div class="navbar-fixed white lighten-5">
             <div class="nav-wrapper container">
-                <a href="#" class="brand-logo blue-text text-lighten-5">FEDAL ModBus simulator</a>
+                <a href="#" class="brand-logo red-text text-darken-5">M MB S</a>
                 <div class="right">
                     <a href="#top"><i class="large material-icons">arrow_upward</i></a>
                 </div>
@@ -24,8 +25,72 @@
     </nav>
     <div ng-app="myApp" ng-controller="myCtrl" class="container">
         <div class="row">
+            <div class="col s1"></div>
+            <div class="col s10">
+                <table class="responsive-table" style="margin: 0; padding: 0; width: auto;">
+                    <tr>
+                        <td>Device</td>
+                        <td ng-class="{
+            'green lighten-3 center-align ' : ((dev_id.link == true) && (dev_id.device != null)),
+            'red lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device != null)),
+            'grey lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device == null))
+         }" ng-repeat="dev_id in connected track by $index">
+                            <a href="#" ng-if="dev_id.device != null" ng-click="selectAddress($index+1)">{{ $index+1 }}</a>
+                            <a href="#" ng-if="dev_id.device == null" ng-click="selectAddress($index+1)">{{ $index+1 }}</a>
+                        </td>
+                    </tr>
+                    <!--<tr>
+                        <td>Device</td>
+                        <td class="grey lighten-3" ng-repeat="dev_id in connected track by $index">{{ dev_id.id }}</td>
+                    </tr>-->
+                </table>
+            </div>
+            <div class="col s1"></div>
+        </div>
+        <div class="row">
+            <div class="col s6">
+                <div ng-if="selected == 0">
+                    <p>Click any device at the table to see an information about</p>
+                </div>
+                <div ng-if="selected > 0">
+                    <div ng-if="device_info.id != null">
+                        <div class="card-panel grey lighten-5 z-depth-1">
+                          <div class="row valign-wrapper">
+                            <div class="col s4">
+                              <img src="../static/images/devices/{{device_info.content.image}}" alt="{{device_info.name}}" class="circle responsive-img"> <!-- notice the "circle" class -->
+                            </div>
+                            <div class="col s8">
+                              <h5>{{device_info.name}}</h5>
+                                <span class="black-text">
+                                    {{device_info.content.description}}
+                                </span>
+                                <p ng-if="device_info.content.link != null"><a href="{{device_info.content.link}}" target="_blank">Web site description</a></p>
+                                <p><a href="#" ng-click="deleteDevice(selected)" class="valign-wrapper"><i class="small material-icons" >delete</i>Удалить</a></p>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div ng-if="device_info.id == null">
+                        <h5>Добавить устройство</h5>
+                        <div class="input-field col s12">
+                            <select>
+                              <option value="" disabled selected>Выберите устройство</option>
+                              <option value="1">Option 1</option>
+                              <option value="2">Option 2</option>
+                              <option value="3">Option 3</option>
+                            </select>
+                            <label>Эмулировать устройство:</label>
+                        </div>
+                        <div class="row"><a href="#" ng-click="addDevice(selected)" class="valign-wrapper"><i class="small material-icons" >add</i>Добавить</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
             <div class="col s9">
-                <table>
+                <table class="responsive-table">
                     <thead>
                         <tr>
                             <th>Регистр</th>
