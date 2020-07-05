@@ -1,20 +1,31 @@
 // materialize css settings
-document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.tooltipped');
-    var instances = M.Tooltip.init(elems);
-  });
-
-// Инициализация выпадающего списка
-document.addEventListener('DOMContentLoaded', function() {
-   var elems = document.querySelectorAll('select');
-   var instances = M.FormSelect.init(elems, '');
-});
-
-
+// document.addEventListener('DOMContentLoaded', function() {
+//     var elems = document.querySelectorAll('.tooltipped');
+//     var instances = M.Tooltip.init(elems);
+//   });
+//
+// // Инициализация выпадающего списка
+// $(document).ready(function(){
+//     $('select').formSelect();
+//     $('.dropdown-trigger').dropdown();
+//   });
 // controllers
 
+var app = angular.module("myApp", ["ngRoute"]);
+app.config(function($routeProvider) {
+  $routeProvider
+  .when("/", {
+    templateUrl : "network.htm",
+    controller: 'networkCtrl'
+  })
+  .when("/manage", {
+    templateUrl : "manage.htm",
+      controller: 'manageCtrl'
+  })
+});
+
 var app = angular.module('myApp', []);
-app.controller('myCtrl', function($scope, $http, $timeout) {
+app.controller('networkCtrl', function($scope, $http, $timeout) {
   $scope.connected = {}
   $scope.device_info = {}
   $scope.selected = 0
