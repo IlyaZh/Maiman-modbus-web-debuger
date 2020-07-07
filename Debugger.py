@@ -1,8 +1,6 @@
 # coding=utf-8
 
-from modbus.modbus import Modbus
 from config_loader import ConfigParser
-from DeviceDataModel import DeviceDataModel
 from debugServer import ThreadDevicesNetwork
 from flask import Flask, request, jsonify, json
 import logging
@@ -17,7 +15,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     file = open('./static/index.html', encoding='utf-8', mode='r')
-    page = file.read();
+    page = file.read()
     file.close()
 
     return page
@@ -70,7 +68,7 @@ def device_info():
     elif device_id == 0:
         return jsonify(threadNetwork.device_config)
     else:
-        return jsonify(threadNetwork.find_device_id(device_id))
+        return jsonify(threadNetwork.find_device_by_id(device_id))
 
 @app.route('/devices_list.json')
 def devices_list():
