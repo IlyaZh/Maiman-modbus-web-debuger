@@ -81,6 +81,12 @@ class ThreadDevicesNetwork(threading.Thread):
             msg += "{:02X}h ".format(i)
         print("received data:", msg)
 
+        if crc16(rec) != 0:
+            return None
+
+        dev_addr = int(rec[0])
+        if dev_addr > 0 and dev_addr <= self.__MAX_ADDR__
+
         answer = bytearray()
         answer.append(0x01)
         answer.append(0x03)
