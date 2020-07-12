@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     parser = ConfigParser('config.xml')
     parser.start()
-    threadNetwork = ThreadDevicesNetwork(parser.model(), 80)
+    threadNetwork = ThreadDevicesNetwork(parser.model(), '127.0.0.1', 502)
 
     threadNetwork.daemon = True
     threadNetwork.start()

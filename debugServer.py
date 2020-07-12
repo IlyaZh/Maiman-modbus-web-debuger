@@ -10,9 +10,10 @@ from flask import request
 
 
 class ThreadDevicesNetwork(threading.Thread):
-    def __init__(self, device_models, port='502'):
+    def __init__(self, device_models, ip='127.0.0.1',  port=502):
         threading.Thread.__init__(self)
         self.__port = port
+        self.__ip = ip
         self.kill_received = False
         self.device_config = device_models
         self.device_types = {}
@@ -56,11 +57,13 @@ class ThreadDevicesNetwork(threading.Thread):
 
     def run(self):
         logging.info("Web server is started!")
+        logging.info("TCP Server is started {:s} : {:d}".format(self.__ip, self.__port))
+        print("TCP Server is started {:s} : {:d}".format(self.__ip, self.__port))
 
         while not self.kill_received:
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.bind(('127.0.0.1', self.__port))
+                    s.bind((self.__ip, self.__port))
                     s.listen(1)
                     sock, addr = s.accept()
                     print('Connection address:', addr)
@@ -83,26 +86,101 @@ class ThreadDevicesNetwork(threading.Thread):
 
         if crc16(rec) != 0:
             return None
+        try:
+            addr = int(rec[0])
+            if 0 < addr <= self.__MAX_ADDR__:
+                answer = bytearray()
+                dev_registers = self.device_data.get(addr)
+                if dev_registers is not None:
+                    answer.append(addr)
+                    reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
+                    cmd = int(rec[1])
+                    if cmd == 0x03:
+                        count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
+                        is_error = False
+                        for i in range(count):
+                            if dev_registers.get(reg+i) is None:
+                                is_error = True
+                                break
 
-        dev_addr = int(rec[0])
-        if dev_addr > 0 and dev_addr <= self.__MAX_ADDR__
+                        if is_error is False:
+                            answer.append(cmd)
+                            answer.append(count * 2)
+                            for i in range(count):
+                                value = dev_registers.get(reg + i)
+                                if value is not None:
+                                    answer.append((value >> 8) & 0xff)
+                                    answer.append(value & 0xff)
+                        else:
+                            # нет такого регистра. Ошибка!
+                            answer.append(0x80 | cmd)
+                            answer.append(0x02)
 
-        answer = bytearray()
-        answer.append(0x01)
-        answer.append(0x03)
-        count = int(rec[5])
-        answer.append(2 * count)
-        regs = [x for x in range(count)]
-        for reg in regs:
-            answer.append(0)
-            answer.append(reg)
-        crc = crc16(answer)
-        answer.append((crc & 0xff))
-        answer.append((crc & 0xff00) >> 8)
+                    elif cmd == 0x06:
+                        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
+                        value = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
+                        if dev_registers.get(reg) is not None:
+                            dev_registers[reg] = value
 
-        msg = ''
-        for i in answer:
-            msg += "{:02X}h ".format(i)
-        print("sent data:", msg)
+                            answer.append(cmd)
+                            answer.append(rec[2])
+                            answer.append(rec[3])
+                            answer.append(rec[4])
+                            answer.append(rec[5])
+                        else:
+                            # нет такого регистра. Ошибка!
+                            answer.append(0x80 | cmd)
+                            answer.append(0x02)
+                    elif cmd == 0x10:
+                        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
+                        count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
+                        byte_count = int(rec[6])
+                        is_error = False
+                        for i in range(int(byte_count/2)):
+                            if dev_registers.get(reg+i) is None:
+                                is_error = True
+                                break
 
-        return answer
+                        if is_error is False:
+                            for i in range(int(byte_count/2)):
+                                value = int(((rec[7+2*i] << 8) & 0xff00) + (rec[8+2*i] & 0xff))
+                                dev_registers[reg+i] = value
+                            answer.append(cmd)
+                            answer.append(rec[2])
+                            answer.append(rec[3])
+                            answer.append(rec[4])
+                            answer.append(rec[5])
+                        else:
+                            # нет такого регистра. Ошибка!
+                            answer.append(0x80 | cmd)
+                            answer.append(0x02)
+                    else:
+                        # Че за команда? Возвращаем ошибку
+                        answer.append(0x80 | cmd)
+                        answer.append(0x01)
+
+
+
+
+            elif addr == 0:
+                # Широковещательная команда установки параметров
+                pass
+            else:
+                answer.append(0x80 | cmd)
+                answer.append(0x0B)
+
+            if len(answer) > 1:
+                crc = crc16(answer)
+                answer.append((crc & 0xff))
+                answer.append((crc & 0xff00) >> 8)
+
+                msg = ''
+                for i in answer:
+                    msg += "{:02X}h ".format(i)
+                print("sent data:", msg)
+
+            return answer
+        except:
+            pass
+        finally:
+            pass
