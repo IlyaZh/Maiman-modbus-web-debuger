@@ -15,16 +15,18 @@ var app = angular.module("myApp", ["ngRoute"]);
 app.config(function($routeProvider) {
   $routeProvider
   .when("/", {
-    templateUrl : "network.htm",
-    controller: 'networkCtrl'
+    templateUrl : "network.html"
+//    ,
+//    controller: 'networkCtrl'
   })
   .when("/manage", {
-    templateUrl : "manage.htm",
-      controller: 'manageCtrl'
+    templateUrl : "manage.html"
+//    ,
+//      controller: 'manageCtrl'
   })
 });
 
-var app = angular.module('myApp', []);
+/*var app = angular.module('myApp', []);
 app.controller('networkCtrl', function($scope, $http, $timeout) {
   $scope.connected = {}
   $scope.device_info = {}
@@ -118,4 +120,4 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
 
     $scope.getTypes();
 	$scope.getData();	// запускаем опрос json
-});
+});*/

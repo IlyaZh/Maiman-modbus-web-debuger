@@ -20,6 +20,22 @@ def index():
 
     return page
 
+@app.route('/manage.html')
+def manage():
+    file = open('./static/manage.html', encoding='utf-8', mode='r')
+    page = file.read()
+    file.close()
+
+    return page
+
+@app.route('/network.html')
+def network():
+    file = open('./static/network.html', encoding='utf-8', mode='r')
+    page = file.read()
+    file.close()
+
+    return page
+
 @app.route('/data.json')
 def device_data():
     db = {
@@ -70,22 +86,18 @@ def device_info():
     else:
         return jsonify(threadNetwork.find_device_by_id(device_id))
 
-@app.route('/devices_list.json')
-def devices_list():
-    dev_list = {
-        'count': len(threadNetwork.device_list),
-        'devices': threadNetwork.device_list
-                }
-
-    return jsonify(dev_list)
-
-@app.route('/online.json')
-def devices_online():
-    return jsonify(threadNetwork.device_timeout)
-
-@app.route('/add_device', methods=['POST'])
-def add_device():
-    return 'add_device'
+# @app.route('/devices_list.json')
+# def devices_list():
+#     dev_list = {
+#         'count': len(threadNetwork.device_list),
+#         'devices': threadNetwork.device_list
+#                 }
+#
+#     return jsonify(dev_list)
+#
+# @app.route('/online.json')
+# def devices_online():
+#     return jsonify(threadNetwork.device_timeout)
 
 
 if __name__ == "__main__":
