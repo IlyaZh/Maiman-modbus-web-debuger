@@ -2,15 +2,13 @@ import threading
 import logging
 from time import sleep
 import socket
-from modbus.modbusCrc import crc16
-
 from flask import Flask, jsonify
 from flask import json
 from flask import request
-
+from modbus.modbusCrc import crc16
 
 class ThreadDevicesNetwork(threading.Thread):
-    def __init__(self, device_models, ip='127.0.0.1',  port=502):
+    def __init__(self, device_models, ip='127.0.0.1', port=502):
         threading.Thread.__init__(self)
         self.__port = port
         self.__ip = ip
@@ -34,9 +32,9 @@ class ThreadDevicesNetwork(threading.Thread):
             self.device_types[dev['id']] = dev
 
         # Начальная инициалиация массивов
-        for i in range(self.__MAX_ADDR__):
-            self.device_data[i] = {}
-            self.device_list[i] = {
+        for addr in range(1, self.__MAX_ADDR__+1):
+            self.device_data[addr] = {}
+            self.device_list[addr] = {
                 'link': False,
                 'timeout': self.__TIMEOUT__,
                 'device': self.device_types.get(0, None)
@@ -56,7 +54,6 @@ class ThreadDevicesNetwork(threading.Thread):
         self.kill_received = True
 
     def run(self):
-        logging.info("Web server is started!")
         logging.info("TCP Server is started {:s} : {:d}".format(self.__ip, self.__port))
         print("TCP Server is started {:s} : {:d}".format(self.__ip, self.__port))
 
@@ -74,7 +71,7 @@ class ThreadDevicesNetwork(threading.Thread):
                             sock.send(answer)
 
             except KeyboardInterrupt:
-                print("Ctrl-c received! Sending kill to threads...ThreadBzuClimate")
+                print("Ctrl-c received! Sending kill to threads")
                 self.kill_received = True
                 sleep(10)
 
@@ -87,84 +84,35 @@ class ThreadDevicesNetwork(threading.Thread):
         if crc16(rec) != 0:
             return None
         try:
+            answer = bytearray()
             addr = int(rec[0])
+            cmd = int(rec[1])
             if 0 < addr <= self.__MAX_ADDR__:
-                answer = bytearray()
                 dev_registers = self.device_data.get(addr)
                 if dev_registers is not None:
                     answer.append(addr)
-                    reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
-                    cmd = int(rec[1])
                     if cmd == 0x03:
-                        count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
-                        is_error = False
-                        for i in range(count):
-                            if dev_registers.get(reg+i) is None:
-                                is_error = True
-                                break
-
-                        if is_error is False:
-                            answer.append(cmd)
-                            answer.append(count * 2)
-                            for i in range(count):
-                                value = dev_registers.get(reg + i)
-                                if value is not None:
-                                    answer.append((value >> 8) & 0xff)
-                                    answer.append(value & 0xff)
-                        else:
-                            # нет такого регистра. Ошибка!
-                            answer.append(0x80 | cmd)
-                            answer.append(0x02)
-
+                        answer.extend(self.modbus_read(addr, rec))
                     elif cmd == 0x06:
-                        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
-                        value = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
-                        if dev_registers.get(reg) is not None:
-                            dev_registers[reg] = value
-
-                            answer.append(cmd)
-                            answer.append(rec[2])
-                            answer.append(rec[3])
-                            answer.append(rec[4])
-                            answer.append(rec[5])
-                        else:
-                            # нет такого регистра. Ошибка!
-                            answer.append(0x80 | cmd)
-                            answer.append(0x02)
+                        answer.extend(self.modbus_write_signle(addr, rec))
                     elif cmd == 0x10:
-                        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
-                        count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
-                        byte_count = int(rec[6])
-                        is_error = False
-                        for i in range(int(byte_count/2)):
-                            if dev_registers.get(reg+i) is None:
-                                is_error = True
-                                break
-
-                        if is_error is False:
-                            for i in range(int(byte_count/2)):
-                                value = int(((rec[7+2*i] << 8) & 0xff00) + (rec[8+2*i] & 0xff))
-                                dev_registers[reg+i] = value
-                            answer.append(cmd)
-                            answer.append(rec[2])
-                            answer.append(rec[3])
-                            answer.append(rec[4])
-                            answer.append(rec[5])
-                        else:
-                            # нет такого регистра. Ошибка!
-                            answer.append(0x80 | cmd)
-                            answer.append(0x02)
+                        answer.extend(self.modbus_write_mult(addr, rec))
                     else:
                         # Че за команда? Возвращаем ошибку
                         answer.append(0x80 | cmd)
                         answer.append(0x01)
 
-
-
-
             elif addr == 0:
                 # Широковещательная команда установки параметров
-                pass
+                cmd = int(rec[1])
+                for addr in range(1, self.__MAX_ADDR__+1):
+                    dev_data = self.device_data.get(addr)
+                    if dev_data is not None:
+                        if cmd == 0x06:
+                            self.modbus_write_signle(addr, rec)
+                        elif cmd == 0x10:
+                            self.modbus_write_mult(addr, rec)
+
             else:
                 answer.append(0x80 | cmd)
                 answer.append(0x0B)
@@ -184,3 +132,80 @@ class ThreadDevicesNetwork(threading.Thread):
             pass
         finally:
             pass
+
+    def modbus_read(self, addr, rec) -> bytearray:
+        answer = bytearray()
+        cmd = 0x03
+        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
+        count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
+        is_error = False
+        for i in range(count):
+            req = self.device_data.get(addr).get(reg + i)
+            if req is None:
+                is_error = True
+                break
+
+        if is_error is False:
+            answer.append(cmd)
+            answer.append(count * 2)
+            for i in range(count):
+                value = self.device_data.get(addr).get(reg + i)
+                if value is not None:
+                    answer.append((value >> 8) & 0xff)
+                    answer.append(value & 0xff)
+        else:
+            # нет такого регистра. Ошибка!
+            answer.append(0x80 | cmd)
+            answer.append(0x02)
+
+        return answer
+
+
+    def modbus_write_signle(self, addr, rec) -> bytearray:
+        answer = bytearray()
+        cmd = 0x06
+        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
+        value = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
+        if self.device_data.get(addr).get(reg) is not None:
+            self.device_data.get(addr)[reg] = value
+
+            answer.append(cmd)
+            answer.append(rec[2])
+            answer.append(rec[3])
+            answer.append(rec[4])
+            answer.append(rec[5])
+        else:
+            # нет такого регистра. Ошибка!
+            answer.append(0x80 | cmd)
+            answer.append(0x02)
+
+        return answer
+
+
+    def modbus_write_mult(self, addr, rec) -> bytearray:
+        answer = bytearray()
+        cmd = 0x10
+        reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
+        count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
+        byte_count = int(rec[6])
+        is_error = False
+        for i in range(int(byte_count / 2)):
+            if self.device_data.get(addr).get(reg + i) is None:
+                is_error = True
+                break
+
+        if is_error is False:
+            for i in range(int(byte_count / 2)):
+                value = int(((rec[7 + 2 * i] << 8) & 0xff00) + (rec[8 + 2 * i] & 0xff))
+                self.device_data.get(addr)[reg + i] = value
+            answer.append(cmd)
+            answer.append(rec[2])
+            answer.append(rec[3])
+            answer.append(rec[4])
+            answer.append(rec[5])
+        else:
+            # нет такого регистра. Ошибка!
+            answer.append(0x80 | cmd)
+            answer.append(0x02)
+
+        return answer
