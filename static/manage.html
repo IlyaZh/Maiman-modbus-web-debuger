@@ -1,3 +1,65 @@
 <div class="container">
-    manage
+    <div class="row">
+        <div class="col s12">
+            <table class="responsive-table" style="padding: 0;">
+                <tr>
+                    <td>Адрес</td>
+                    <td ng-class="{
+                'green lighten-3 center-align ' : ((dev_id.link == true) && (dev_id.device != null)),
+                'red lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device != null)),
+                'grey lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device == null))
+             }" ng-repeat="dev_id in connected track by $index">
+                        <span ng-if="dev_id.device != null" ng-click="selectAddress($index+1)">{{ $index+1 }}</span>
+                        <span ng-if="dev_id.device == null" ng-click="selectAddress($index+1)">{{ $index+1 }}</span>
+                    </td>
+                </tr>
+                <!--<tr>
+                    <td>Device</td>
+                    <td class="grey lighten-3" ng-repeat="dev_id in connected track by $index">{{ dev_id.id }}</td>
+                </tr>-->
+            </table>
+        </div>
+        <div class="col s4">
+            <div ng-if="selected_addr == 0">
+                <p>Выберите адрес из списка для дальнейших действий с ним</p>
+            </div>
+            <div ng-if="selected_addr > 0">
+                <p>Выбран адрес {{selected_addr}}</p>
+                <div> <!--ng-if="device_info.id == null"-->
+                    <h5>Добавить устройство</h5>
+                    <ul>
+                        <li ng-repeat="device in types track by $index" ng-click="selectDeviceType(device.id)"
+                            ng-class="{'green-text text-lighten-3' : (device.id == selected_device)}">{{device.name}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col s8">
+            <div ng-if="device_info.id != null">
+                <div>
+                    <div class="row valign-wrapper">
+                        <div class="col s4">
+                            <img ng-hide="device_info.content.image == null"
+                                 src="../static/images/devices/{{device_info.content.image}}" alt="{{device_info.name}}"
+                                 class="circle responsive-img"> <!-- notice the "circle" class -->
+                            <div ng-show="device_info.content.image == null">No image</div>
+                        </div>
+                        <div class="col s8">
+                            <h5>{{device_info.name}}</h5>
+                            <span class="black-text">
+                                <p ng-hide="device_info.content.description == null">{{device_info.content.description}}</p>
+                                <p ng-show="device_info.content.description == null">No description</p>
+                            </span>
+                            <p ng-if="device_info.content.link != null"><a href="{{device_info.content.link}}"
+                                                                           target="_blank">Web site description</a></p>
+                            <!--                                <p><a href="#" ng-click="deleteDevice(selected)" class="valign-wrapper"><i class="small material-icons" >delete</i>Удалить</a></p>-->
+                            <p><span ng-click="addDevice(selected_addr, device_info.id)" class="valign-wrapper"><i
+                            class="small material-icons">add</i>Добавить</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

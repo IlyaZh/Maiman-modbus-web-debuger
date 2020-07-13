@@ -22,60 +22,6 @@
             </div>
             <div class="col s1"></div>
         </div>
-        <div class="row">
-            <div class="col s12">
-                <div ng-if="selected == 0">
-                    <p>Click any device at the table to see an information about</p>
-                </div>
-                <div ng-if="selected > 0">
-                    <div class="col s4">
-                          <select id="dev_type">
-                            <option value="" disabled selected>Choose your option</option>
-                            <option value="1">Option 1</option>
-                            <option value="2">Option 2</option>
-                            <option value="3">Option 3</option>
-                          </select>
-                          <label for="dev_type">Materialize Select</label>
-                        </div>
-                    <div ng-if="device_info.id != null">
-                        <div class="card-panel grey lighten-5 z-depth-1">
-                          <div class="row valign-wrapper">
-                            <div class="col s4">
-                              <img src="../static/images/devices/{{device_info.content.image}}" alt="{{device_info.name}}" class="circle responsive-img"> <!-- notice the "circle" class -->
-                            </div>
-                            <div class="col s8">
-                              <h5>{{device_info.name}}</h5>
-                                <span class="black-text">
-                                    {{device_info.content.description}}
-                                </span>
-                                <p ng-if="device_info.content.link != null"><a href="{{device_info.content.link}}" target="_blank">Web site description</a></p>
-                                <p><a href="#" ng-click="deleteDevice(selected)" class="valign-wrapper"><i class="small material-icons" >delete</i>Удалить</a></p>
-                            </div>
-                          </div>
-                        </div>
-                    </div>
-                    <div ng-if="device_info.id == null">
-                        <h5>Добавить устройство</h5>
-
-                        <div class="col s4">
-                              <!-- Dropdown Trigger -->
-                              <a class='dropdown-trigger btn' href='#' data-target='dropdown1'>Drop Me!</a>
-
-                              <!-- Dropdown Structure -->
-                              <ul id='dropdown1' class='dropdown-content'>
-                                <li><a href="#!">one</a></li>
-                                <li><a href="#!">two</a></li>
-                                <li class="divider" tabindex="-1"></li>
-                                <li><a href="#!">three</a></li>
-                                <li><a href="#!"><i class="material-icons">view_module</i>four</a></li>
-                                <li><a href="#!"><i class="material-icons">cloud</i>five</a></li>
-                              </ul>
-                        </div>
-                        <div class="col s4"><a href="#" ng-click="addDevice(selected)" class="valign-wrapper"><i class="small material-icons" >add</i>Добавить</a></div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
 
         <div class="row">

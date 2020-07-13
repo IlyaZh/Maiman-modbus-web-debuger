@@ -17,7 +17,7 @@ class ConfigParser:
             device_model = {}
             device_name = device.get('name', '')
 
-            device_id = device.get('id', '')
+            device_id = int(device.get('id', 0), 16)
 
             device_com_delays = {}
 

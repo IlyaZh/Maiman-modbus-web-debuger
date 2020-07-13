@@ -9,17 +9,34 @@
 </head>
 <body id="top" ng-app="myApp">
     <nav>
-        <div class="navbar-fixed white lighten-5">
+        <div class="navbar-fixed">
             <div class="nav-wrapper container valign-wrapper">
-                <div class="col s2">
-                    <!--<img src="../static/images/maiman.webp" alt="" class="responsive-img">-->
+                <div class="nav-content left">
+                  <ul class="tabs tabs-transparent">
+                    <li class="tab"><a [ngClass]={"active": title=='network'} href="#!">Network</a></li>
+                    <li class="tab"><a [ngClass]={"active": title=='manage'} href="#!manage">Manage</a></li>
+                  </ul>
                 </div>
-                <div class="col s8">
-                    <a href="#" class="brand-logo red-text text-darken-5">M MB S</a>
+                <div class="brand-logo center">
+                    Logo
+<!--                    <a href="#!"><img src="../static/images/maiman.webp" alt="" class="responsive-img" style="border: 1px solid white !important;"></a>-->
                 </div>
-                <div class="right col s2">
-                    <a href="#top"><i class="large material-icons">arrow_upward</i></a>
-                </div>
+<!--                <ul id="nav-mobile" class="left hide-on-med-and-down">-->
+<!--                    <li><a href="#!">Network</a></li>-->
+<!--                    <li><a href="#!manage">Manage</a></li>-->
+<!--                </ul>-->
+
+
+
+<!--                <div class="col s2">-->
+<!--&lt;!&ndash;                    <img src="../static/images/maiman.webp" alt="" class="responsive-img">&ndash;&gt;-->
+<!--                </div>-->
+<!--                <div class="col s8">-->
+<!--                    <a href="#" class="brand-logo red-text text-darken-5">M MB S</a>-->
+<!--                </div>-->
+<!--                <div class="right col s2">-->
+<!--                    <a href="#top"><i class="large material-icons">arrow_upward</i></a>-->
+<!--                </div>-->
             </div>
         </div>
     </nav>

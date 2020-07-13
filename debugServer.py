@@ -25,7 +25,7 @@ class ThreadDevicesNetwork(threading.Thread):
 
         for dev_id in device_models:
             dev_mode = device_models.get(dev_id)
-            id = int(dev_mode.get('id', 0), 16)
+            id = dev_mode.get('id', 0)
             name = dev_mode.get('name', "")
             content = dev_mode.get('content', dict(image=None, description='', link='#'))
             dev = dict(id=id, name=name, content=content)
@@ -33,7 +33,7 @@ class ThreadDevicesNetwork(threading.Thread):
 
         # Начальная инициалиация массивов
         for addr in range(1, self.__MAX_ADDR__+1):
-            self.device_data[addr] = {}
+            self.device_data[addr] = {1: 1, 2: 3}
             self.device_list[addr] = {
                 'link': False,
                 'timeout': self.__TIMEOUT__,
@@ -47,8 +47,24 @@ class ThreadDevicesNetwork(threading.Thread):
     def remove(self, addr):
         print("remove", addr)
 
-    def add(self, addr, type):
-        print("add", addr, type)
+    def add(self, addr, id):
+        print("add", addr, id)
+
+        device_type = self.device_config.get(id)
+
+        self.device_list[addr] = {
+            'link': True,
+            'timeout': 0,
+            'device': self.device_types.get(type, None)
+        }
+
+        for cmd in device_type['commands']:
+            reg = device_type['commands'][cmd]
+            # print(reg)
+            # self.device_data[addr][reg.code] = 0
+
+        print(self.device_list)
+        print(device_type)
 
     def kill(self):
         self.kill_received = True
@@ -90,6 +106,7 @@ class ThreadDevicesNetwork(threading.Thread):
             if 0 < addr <= self.__MAX_ADDR__:
                 dev_registers = self.device_data.get(addr)
                 if dev_registers is not None:
+                    self.device_list[addr]['timeout'] = 0
                     answer.append(addr)
                     if cmd == 0x03:
                         answer.extend(self.modbus_read(addr, rec))
@@ -108,6 +125,7 @@ class ThreadDevicesNetwork(threading.Thread):
                 for addr in range(1, self.__MAX_ADDR__+1):
                     dev_data = self.device_data.get(addr)
                     if dev_data is not None:
+                        self.device_list[addr]['timeout'] = 0
                         if cmd == 0x06:
                             self.modbus_write_signle(addr, rec)
                         elif cmd == 0x10:

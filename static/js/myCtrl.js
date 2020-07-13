@@ -4,7 +4,7 @@
 //     var instances = M.Tooltip.init(elems);
 //   });
 //
-// // Инициализация выпадающего списка
+ // Инициализация выпадающего списка
 // $(document).ready(function(){
 //     $('select').formSelect();
 //     $('.dropdown-trigger').dropdown();
@@ -15,24 +15,21 @@ var app = angular.module("myApp", ["ngRoute"]);
 app.config(function($routeProvider) {
   $routeProvider
   .when("/", {
-    templateUrl : "network.html"
-//    ,
-//    controller: 'networkCtrl'
+    templateUrl : "network.html",
+    controller: 'networkCtrl'
   })
   .when("/manage", {
-    templateUrl : "manage.html"
-//    ,
-//      controller: 'manageCtrl'
+    templateUrl : "manage.html",
+    controller: 'manageCtrl'
   })
 });
 
-/*var app = angular.module('myApp', []);
 app.controller('networkCtrl', function($scope, $http, $timeout) {
+    $scope.page = 'network'
+
   $scope.connected = {}
   $scope.device_info = {}
-  $scope.selected = 0
   $scope.link = false
-  $scope.types = {}
 
   $scope.setValue = function(reg, value) {
     var cmd =
@@ -51,18 +48,41 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
 				  })
   }
 
-  $scope.getData = function () {
-		$timeout(function () {
+    $scope.getData = function () {
+        $timeout(function () {
             $http({
-                    url: 'data.json?r=' + Math.random(),
-                    method: 'GET'
-                }).then(function (answ) {
-                    $scope.connected = answ.data.connected;
-                });
+                url: 'data.json?r=' + Math.random(),
+                method: 'GET'
+            }).then(function (answ) {
+                $scope.connected = answ.data.connected;
+            });
             $scope.getData();
-         }, 100 );
+        }, 100 );
+  };
 
-    };
+
+	$scope.getData();	// запускаем опрос json
+});
+
+app.controller('manageCtrl', function($scope, $http, $timeout) {
+    $scope.page = 'manage'
+    $scope.connected = {}
+    $scope.types = {}
+    $scope.device_info = {}
+    $scope.selected_addr = 0
+    $scope.selected_device = 0
+
+    $scope.getData = function () {
+        $timeout(function () {
+            $http({
+                url: 'data.json?r=' + Math.random(),
+                method: 'GET'
+            }).then(function (answ) {
+                $scope.connected = answ.data.connected;
+            });
+//            $scope.getData();
+        }, 100 );
+  };
 
     $scope.getTypes = function() {
         $timeout(function() {
@@ -75,14 +95,31 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
         }, 100);
     };
 
+    $scope.getInfo = function(addr) {
+        $timeout(function() {
+            $http({
+                url: 'info.json?id='+ addr +'&r=' + Math.random(),
+                method: 'GET'
+            }).then(function(answ) {
+                $scope.device_info = answ.data.types;
+            });
+        }, 100);
+    };
+
     $scope.selectAddress = function(addr) {
-        if($scope.selected == addr) {
-            $scope.selected = 0
+        if($scope.selected_addr == addr) {
+            $scope.selected_addr = 0
         } else {
-            $scope.selected = addr
+            $scope.selected_addr = addr
             device = $scope.connected[addr].device
             $scope.device_info = device
         }
+    }
+
+    $scope.selectDeviceType = function(id) {
+        console.log(id)
+        $scope.selected_device = id
+        $scope.device_info = $scope.types[id]
     }
 
     $scope.deleteDevice = function(addr) {
@@ -99,6 +136,7 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
 				  }).then(function (answ) {
                     console.log(cmd)
 				  })
+				  $scope.getData();
     }
 
     $scope.addDevice = function(addr, type) {
@@ -116,8 +154,9 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
 				  }).then(function (answ) {
                     console.log(cmd)
 				  })
+		$scope.getData();
     }
 
     $scope.getTypes();
-	$scope.getData();	// запускаем опрос json
-});*/
+    $scope.getData();
+});
