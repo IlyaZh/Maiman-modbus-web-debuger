@@ -71,6 +71,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
     $scope.device_info = {}
     $scope.selected_addr = 0
     $scope.selected_device = 0
+    $scope.current_info = {}
 
     $scope.getData = function () {
         $timeout(function () {
@@ -95,13 +96,13 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
         }, 100);
     };
 
-    $scope.getInfo = function(addr) {
+    $scope.getInfo = function(id) {
         $timeout(function() {
             $http({
-                url: 'info.json?id='+ addr +'&r=' + Math.random(),
+                url: 'info.json?id='+ id +'&r=' + Math.random(),
                 method: 'GET'
             }).then(function(answ) {
-                $scope.device_info = answ.data.types;
+                $scope.device_info = answ.data;
             });
         }, 100);
     };
@@ -109,17 +110,23 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
     $scope.selectAddress = function(addr) {
         if($scope.selected_addr == addr) {
             $scope.selected_addr = 0
+            $scope.current_info = {}
         } else {
             $scope.selected_addr = addr
             device = $scope.connected[addr].device
-            $scope.device_info = device
+            $scope.current_info = device
+            if (device != null) {
+                $scope.device_info
+                console.log(device.id)
+                console.log($scope.device_info)
+            }
         }
     }
 
     $scope.selectDeviceType = function(id) {
-        console.log(id)
         $scope.selected_device = id
-        $scope.device_info = $scope.types[id]
+        $scope.current_info = $scope.types[id]
+        console.log($scope.current_info)
     }
 
     $scope.deleteDevice = function(addr) {
@@ -159,4 +166,5 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
 
     $scope.getTypes();
     $scope.getData();
+    $scope.getInfo(0);
 });

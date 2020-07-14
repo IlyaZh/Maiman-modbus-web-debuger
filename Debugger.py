@@ -47,7 +47,8 @@ def device_data():
 @app.route('/types.json')
 def device_types():
     types = {
-        'types': threadNetwork.device_types
+        # 'types': threadNetwork.device_types
+        'types': threadNetwork.device_config
     }
     return jsonify(types)
 

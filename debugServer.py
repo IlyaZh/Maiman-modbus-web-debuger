@@ -14,7 +14,7 @@ class ThreadDevicesNetwork(threading.Thread):
         self.__ip = ip
         self.kill_received = False
         self.device_config = device_models
-        self.device_types = {}
+        # self.device_types = {}
         self.device_data = {}
         self.__TIMEOUT__ = 3000
 
@@ -29,7 +29,7 @@ class ThreadDevicesNetwork(threading.Thread):
             name = dev_mode.get('name', "")
             content = dev_mode.get('content', dict(image=None, description='', link='#'))
             dev = dict(id=id, name=name, content=content)
-            self.device_types[dev['id']] = dev
+            # self.device_types[dev['id']] = dev
 
         # Начальная инициалиация массивов
         for addr in range(1, self.__MAX_ADDR__+1):
@@ -37,11 +37,11 @@ class ThreadDevicesNetwork(threading.Thread):
             self.device_list[addr] = {
                 'link': False,
                 'timeout': self.__TIMEOUT__,
-                'device': self.device_types.get(0, None)
+                'device': self.device_config.get(0, None)
             }
 
     def find_device_by_id(self, id):
-        device = self.device_config.get(str(id), {})
+        device = self.device_config.get(id, {})
         return device
 
     def remove(self, addr):
@@ -55,7 +55,7 @@ class ThreadDevicesNetwork(threading.Thread):
         self.device_list[addr] = {
             'link': True,
             'timeout': 0,
-            'device': self.device_types.get(type, None)
+            'device': device_type
         }
 
         for cmd in device_type['commands']:
