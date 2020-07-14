@@ -44,6 +44,8 @@ class ConfigParser:
                 for cmd in commands:
                     code = int(cmd.get('code'), 16)
                     device_commands[code] = cmd.attrib
+                    if device_commands[code].get('unit','-') == '(deg)':
+                        device_commands[code]['unit'] = '°C'
 
             device_model['commands'] = device_commands
 

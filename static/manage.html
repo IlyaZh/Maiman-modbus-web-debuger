@@ -5,12 +5,11 @@
                 <tr>
                     <td>Адрес</td>
                     <td ng-class="{
-                'green lighten-3 center-align ' : ((dev_id.link == true) && (dev_id.device != null)),
-                'red lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device != null)),
-                'grey lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device == null))
-             }" ng-repeat="dev_id in network track by $index">
-                        <span ng-if="dev_id.device != null" ng-click="selectAddress($index+1)">{{ $index+1 }}</span>
-                        <span ng-if="dev_id.device == null" ng-click="selectAddress($index+1)">{{ $index+1 }}</span>
+                'green lighten-1 center-align ' : (dev_id.device != null),
+                'red lighten-3 center-align ' : (dev_id.device == null),
+                'yellow lighten-1 center-align' : ($index+1 == selected_addr)
+             }" style="cursor: pointer;" ng-repeat="dev_id in network track by $index" ng-click="selectAddress($index+1)">
+                        {{ $index+1 }}
                     </td>
                 </tr>
                 <!--<tr>
@@ -24,11 +23,11 @@
                 <p>Выберите адрес из списка для дальнейших действий с ним</p>
             </div>
             <div ng-if="selected_addr > 0" class="row">
-                <p>Выбран адрес {{selected_addr}}</p>
+<!--                <p>Выбран адрес {{selected_addr}}</p>-->
                 <div ng-show="network[selected_addr].device == null">
                     <h5>Добавить устройство</h5>
                     <ul>
-                        <li ng-repeat="device in types track by $index" ng-click="selectDeviceType(device.id)"
+                        <li style="cursor: pointer;" ng-repeat="device in types track by $index" ng-click="selectDeviceType(device.id)"
                             ng-class="{'green-text text-lighten-3' : (device.id == selected_device)}">{{device.name}}
                         </li>
                     </ul>
@@ -81,8 +80,8 @@
                             <p ng-if="device_info.content.link != null"><a href="{{device_info.content.link}}"
                                                                            target="_blank">Web site description</a></p>
                             <!--                                <p><a href="#" ng-click="deleteDevice(selected)" class="valign-wrapper"><i class="small material-icons" >delete</i>Удалить</a></p>-->
-                            <p><span ng-click="addDevice(selected_addr, device_info.id)" class="valign-wrapper"><i
-                            class="small material-icons">add</i>Добавить</span></p>
+                            <p><span ng-click="addDevice(selected_addr, device_info.id)" class="valign-wrapper" style="cursor: pointer;"><i
+                            class="small material-icons">add_circle_outline</i>Добавить</span></p>
                         </div>
                     </div>
                 </div>
