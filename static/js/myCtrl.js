@@ -27,9 +27,8 @@ app.config(function($routeProvider) {
 app.controller('networkCtrl', function($scope, $http, $timeout) {
     $scope.page = 'network'
 
-  $scope.connected = {}
+  $scope.network = {}
   $scope.device_info = {}
-  $scope.link = false
 
   $scope.setValue = function(reg, value) {
     var cmd =
@@ -54,7 +53,8 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
                 url: 'data.json?r=' + Math.random(),
                 method: 'GET'
             }).then(function (answ) {
-                $scope.connected = answ.data.connected;
+                $scope.network = answ.data.network;
+                console.log("getData " + answ.data)
             });
             $scope.getData();
         }, 100 );
@@ -66,12 +66,11 @@ app.controller('networkCtrl', function($scope, $http, $timeout) {
 
 app.controller('manageCtrl', function($scope, $http, $timeout) {
     $scope.page = 'manage'
-    $scope.connected = {}
+    $scope.network = {}
     $scope.types = {}
     $scope.device_info = {}
     $scope.selected_addr = 0
     $scope.selected_device = 0
-    $scope.current_info = {}
 
     $scope.getData = function () {
         $timeout(function () {
@@ -79,7 +78,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
                 url: 'data.json?r=' + Math.random(),
                 method: 'GET'
             }).then(function (answ) {
-                $scope.connected = answ.data.connected;
+                $scope.network = answ.data.network;
             });
 //            $scope.getData();
         }, 100 );
@@ -96,37 +95,21 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
         }, 100);
     };
 
-    $scope.getInfo = function(id) {
-        $timeout(function() {
-            $http({
-                url: 'info.json?id='+ id +'&r=' + Math.random(),
-                method: 'GET'
-            }).then(function(answ) {
-                $scope.device_info = answ.data;
-            });
-        }, 100);
-    };
-
     $scope.selectAddress = function(addr) {
         if($scope.selected_addr == addr) {
             $scope.selected_addr = 0
-            $scope.current_info = {}
+            $scope.device_info = {}
         } else {
             $scope.selected_addr = addr
-            device = $scope.connected[addr].device
-            $scope.current_info = device
-            if (device != null) {
-                $scope.device_info
-                console.log(device.id)
-                console.log($scope.device_info)
-            }
+            device = $scope.network[addr].device
+            $scope.device_info = device
         }
     }
 
     $scope.selectDeviceType = function(id) {
         $scope.selected_device = id
-        $scope.current_info = $scope.types[id]
-        console.log($scope.current_info)
+        $scope.device_info = $scope.types[id]
+        console.log($scope.device_info)
     }
 
     $scope.deleteDevice = function(addr) {
@@ -166,5 +149,4 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
 
     $scope.getTypes();
     $scope.getData();
-    $scope.getInfo(0);
 });

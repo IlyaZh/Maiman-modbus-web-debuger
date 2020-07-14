@@ -39,9 +39,8 @@ def network():
 @app.route('/data.json')
 def device_data():
     db = {
-        'connected': threadNetwork.device_list,
-        'data': threadNetwork.device_data
-    }
+        'network' :threadNetwork.devices
+          }
     return jsonify(db)
 
 @app.route('/types.json')
@@ -77,28 +76,16 @@ def remove():
     # threadModbus.q_comm.append(data1['param'])
     return ""
 
-@app.route('/info.json', methods=['GET'])
-def device_info():
-    device_id = request.args.get('id', type=int)
-    if device_id is None:
-        return jsonify(None)
-    elif device_id == 0:
-        return jsonify(threadNetwork.device_config)
-    else:
-        return jsonify(threadNetwork.find_device_by_id(device_id))
+# @app.route('/info.json', methods=['GET'])
+# def device_info():
+#     device_id = request.args.get('id', type=int)
+#     if device_id is None:
+#         return jsonify(None)
+#     elif device_id == 0:
+#         return jsonify(threadNetwork.device_config)
+#     else:
+#         return jsonify(threadNetwork.find_device_by_id(device_id))
 
-# @app.route('/devices_list.json')
-# def devices_list():
-#     dev_list = {
-#         'count': len(threadNetwork.device_list),
-#         'devices': threadNetwork.device_list
-#                 }
-#
-#     return jsonify(dev_list)
-#
-# @app.route('/online.json')
-# def devices_online():
-#     return jsonify(threadNetwork.device_timeout)
 
 
 if __name__ == "__main__":

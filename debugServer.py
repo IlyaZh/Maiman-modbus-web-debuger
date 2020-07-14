@@ -14,14 +14,10 @@ class ThreadDevicesNetwork(threading.Thread):
         self.__ip = ip
         self.kill_received = False
         self.device_config = device_models
-        # self.device_types = {}
-        self.device_data = {}
+        self.devices = {}
         self.__TIMEOUT__ = 3000
 
         self.__MAX_ADDR__ = 32
-        self.device_list = {}
-        self.device_timeout = {}
-        self.device_online = {}
 
         for dev_id in device_models:
             dev_mode = device_models.get(dev_id)
@@ -33,12 +29,11 @@ class ThreadDevicesNetwork(threading.Thread):
 
         # Начальная инициалиация массивов
         for addr in range(1, self.__MAX_ADDR__+1):
-            self.device_data[addr] = {1: 1, 2: 3}
-            self.device_list[addr] = {
-                'link': False,
-                'timeout': self.__TIMEOUT__,
-                'device': self.device_config.get(0, None)
+            self.devices[addr] = {
+                'device': self.device_config.get(0, None),
+                'data': {}
             }
+
 
     def find_device_by_id(self, id):
         device = self.device_config.get(id, {})
@@ -52,19 +47,17 @@ class ThreadDevicesNetwork(threading.Thread):
 
         device_type = self.device_config.get(id)
 
-        self.device_list[addr] = {
-            'link': True,
-            'timeout': 0,
-            'device': device_type
+        self.devices[addr] = {
+            'device': device_type,
+            'data': {}
         }
 
         for cmd in device_type['commands']:
             reg = device_type['commands'][cmd]
-            # print(reg)
-            # self.device_data[addr][reg.code] = 0
+            code = reg.get('code')
+            self.devices[addr]['data'][int(code, 16)] = 0
 
-        print(self.device_list)
-        print(device_type)
+        self.devices[addr]['data'][int('0702', 16)] = id
 
     def kill(self):
         self.kill_received = True
