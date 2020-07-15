@@ -104,6 +104,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
             device = $scope.network[addr].device
             $scope.device_info = device
         }
+        $scope.selected_device = 0
     }
 
     $scope.selectDeviceType = function(id) {
