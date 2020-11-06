@@ -80,8 +80,10 @@
                             <p ng-if="device_info.content.link != null"><a href="{{device_info.content.link}}"
                                                                            target="_blank">Web site description</a></p>
                             <!--                                <p><a href="#" ng-click="deleteDevice(selected)" class="valign-wrapper"><i class="small material-icons" >delete</i>Удалить</a></p>-->
-                            <p><span ng-click="addDevice(selected_addr, device_info.id)" class="valign-wrapper" style="cursor: pointer;"><i
-                            class="small material-icons">add_circle_outline</i>Добавить</span></p>
+                            <div>
+                                <a ng-show="network[selected_addr].device == null" ng-click="addDevice(selected_addr, device_info.id)" class="waves-effect waves-light btn-small"><i class="material-icons left">add_circle_outline</i>Добавить</a>
+                                <a ng-hide="network[selected_addr].device == null" ng-click="deleteDevice(selected_addr)" class="waves-effect waves-light btn-small valign-wrapper"><i class="material-icons left">remove_circle_outline</i>Удалить</a>
+                            </div>
                         </div>
                     </div>
                 </div>

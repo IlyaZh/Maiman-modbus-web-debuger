@@ -40,11 +40,12 @@ class ThreadDevicesNetwork(threading.Thread):
         return device
 
     def remove(self, addr):
-        print("remove", addr)
+        self.devices[addr] = {
+            'device': self.device_config.get(0, None),
+            'data': {}
+        }
 
     def add(self, addr, id):
-        print("add", addr, id)
-
         device_type = self.device_config.get(id)
 
         self.devices[addr] = {

@@ -1,57 +1,43 @@
 <div class="container">
     <div class="row">
-            <div class="col s1"></div>
-            <div class="col s10">
-                <table class="responsive-table" style="margin: 0; padding: 0; width: auto;">
-                    <tr>
-                        <td>Device</td>
-                        <td ng-class="{
-            'green lighten-3 center-align ' : ((dev_id.link == true) && (dev_id.device != null)),
-            'red lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device != null)),
-            'grey lighten-3 center-align ' : ((dev_id.link == false) && (dev_id.device == null))
-         }" ng-repeat="dev_id in connected track by $index">
-                            <a href="#" ng-if="dev_id.device != null" ng-click="selectAddress($index+1)">{{ $index+1 }}</a>
-                            <a href="#" ng-if="dev_id.device == null" ng-click="selectAddress($index+1)">{{ $index+1 }}</a>
-                        </td>
-                    </tr>
-                    <!--<tr>
-                        <td>Device</td>
-                        <td class="grey lighten-3" ng-repeat="dev_id in connected track by $index">{{ dev_id.id }}</td>
-                    </tr>-->
-                </table>
-            </div>
-            <div class="col s1"></div>
+        <div class="col s12">
+            <table class="responsive-table" style="padding: 0;">
+                <tr>
+                    <td>Адрес</td>
+                    <td ng-click="selectAddress(0)" style="cursor: pointer;">Все</td>
+                    <td ng-class="{
+                'green lighten-1 center-align ' : (dev_id.device != null),
+                'red lighten-3 center-align ' : (dev_id.device == null),
+                'yellow lighten-1 center-align' : ($index+1 == selected_addr)
+             }" ng-click="selectAddress($index+1)" ng-repeat="dev_id in network track by $index"
+                        style="cursor: pointer;">
+                        {{ $index+1 }}
+                    </td>
+                </tr>
+                <!--<tr>
+                    <td>Device</td>
+                    <td class="grey lighten-3" ng-repeat="dev_id in connected track by $index">{{ dev_id.id }}</td>
+                </tr>-->
+            </table>
         </div>
-
-
         <div class="row">
-            <div class="col s9">
-                <table class="responsive-table">
-                    <thead>
-                        <tr>
-                            <th>Регистр</th>
-                            <th>Значение</th>
-                            <th>&nbsp;</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="(reg,value) in data">
-                            <td>{{names[$index]}}</td>
-                            <td><input type="text" ng-model="value"></td>
-                            <td><i class="small material-icons" ng-click="setValue(reg, value)">send</i></td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="col s12">
+
             </div>
-            <div class="col s3">
-                <div ng-hide="link" class="valign-wrapper row">
-                    <span class="left">Device is not connected</span>
-                    <i class="medium material-icons right">cloud_off</i>
-                </div>
-                <div ng-show="link" class="valign-wrapper">
-                    <span class="left">Device is connected</span>
-                    <i class="medium material-icons right">cloud_done</i>
-                </div>
-            </div>
+            <table class="responsive-table centered striped">
+                <tbody>
+                <tr ng-repeat="device in network track by $index">
+                    <td>{{$index+1}}</td>
+                    <td ng-repeat="(cmd, value) in device.data">
+                        <div class="center">
+                            {{hex(cmd)}}<br>
+                            {{value}}
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
         </div>
+
+    </div>
 </div>
