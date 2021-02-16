@@ -35,20 +35,20 @@ Current Setpoint Absolute Accuracy: less then 1%</Description>
 		<!-- команды доступные для устройства. Они циклично опрашиваются. Опрашиваются != используются :)) -->
 		<Commands>
 			<!-- Числа все Hex, кроме делителя - он десятичный. -->
-			<Command code="0100" divider="10" unit="Hz"/>
-			<Command code="0101" divider="10" interval="100" unit="Hz"/>
-			<Command code="0102" divider="10" interval="100" unit="Hz"/>
-			<Command code="0200" divider="10" unit="ms"/>
-			<Command code="0201" divider="10" interval="100" unit="ms"/>
-			<Command code="0202" divider="10" unit="ms"/>
-			<Command code="0300" divider="10" unit="A"/>
-			<Command code="0301" divider="10" interval="100" unit="A"/>
-			<Command code="0302" divider="10" interval="100" unit="A"/>
-			<Command code="0307" divider="10" unit="A"/>
-			<Command code="0407" divider="10" unit="V"/>
-			<Command code="0700"/>
-			<Command code="0701" interval="100"/>
-			<Command code="0800"/>
+			<Command code="0001" divider="10" unit="Hz"/>
+			<Command code="0011" divider="10" interval="100" unit="Hz"/>
+			<Command code="0012" divider="10" interval="100" unit="Hz"/>
+			<Command code="0002" divider="10" unit="ms"/>
+			<Command code="0021" divider="10" interval="100" unit="ms"/>
+			<Command code="0022" divider="10" unit="ms"/>
+			<Command code="0003" divider="10" unit="A"/>
+			<Command code="0031" divider="10" interval="100" unit="A"/>
+			<Command code="0032" divider="10" interval="100" unit="A"/>
+			<Command code="0033" divider="10" unit="A"/>
+			<Command code="0034" divider="10" unit="V"/>
+			<Command code="0007"/>
+			<Command code="0008" interval="100"/>
+			<Command code="0009"/>
 		</Commands>
 		<!-- доступные для регулирования пределы -->
 		<Limits>

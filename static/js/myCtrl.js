@@ -147,3 +147,40 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
     $scope.getTypes();
     $scope.getData();
 });
+
+app.controller('setupCtrl', function($scope, $http, $timeout) {
+    $scope.setupData = {}
+
+    $scope.setPort = function(port) {
+        var cmd = {
+            "cmd": "port",
+            "param": {
+                "port": port
+            }
+        };
+        if(port != undefined) {
+            $http({
+                url: "/actionAddr",
+                method: 'POST',
+                params: {data: cmd}
+            }).then(function (answ) {
+                console.log(cmd)
+            })
+        }
+    }
+
+    $scope.getSetup = function() {
+        $timeout(function () {
+            $http({
+                url: 'setup.json?r=' + Math.random(),
+                method: 'GET'
+            }).then(function (answ) {
+                $scope.setupData = answ.data.setup;
+                // console.log($scope.setupData)
+            });
+           $scope.getSetup();
+        }, 2000 );
+    }
+
+    $scope.getSetup();
+});

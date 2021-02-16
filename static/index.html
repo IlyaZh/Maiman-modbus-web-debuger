@@ -23,6 +23,29 @@
             </div>
         </div>
     </nav>
+    <div ng-controller="setupCtrl">
+        <div class="container">
+            <div class="row valign-wrapper">
+                <div class="col s6">
+                    <h5>Настройки сервера</h5>
+                    IP: {{setupData.ip}}, port: {{setupData.port}}
+                </div>
+                <div class="col s6">
+                    <form class="row valign-wrapper">
+                        <div class="col">
+                            <label for="port">Порт</label>
+                            <input type="number" id="port"  ng-model="nport" required name="port" value="502" min="200" max="99999">
+                            <em>От 200 до 99999 включительно</em>
+                        </div>
+
+                        <div class="col">
+                            <span style="text-decoration: underline;" ng-click="setPort(nport)">Установить порт</span>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
     <div ng-view>
 
     </div>

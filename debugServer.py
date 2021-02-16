@@ -7,15 +7,20 @@ from flask import json
 from flask import request
 from modbus.modbusCrc import crc16
 
+
 class ThreadDevicesNetwork(threading.Thread):
-    def __init__(self, device_models, ip='127.0.0.1', port=502):
+    def __init__(self, device_models, inIp='127.0.0.1', inPort=502):
         threading.Thread.__init__(self)
-        self.__port = port
-        self.__ip = ip
+        self.port = inPort
+        self.ip = inIp
+        self.__change_setup = False
         self.kill_received = False
         self.device_config = device_models
         self.devices = {}
         self.__TIMEOUT__ = 3000
+        self.device_list = {}
+
+        self.port_changed = False
 
         self.__MAX_ADDR__ = 32
 
@@ -28,12 +33,11 @@ class ThreadDevicesNetwork(threading.Thread):
             # self.device_types[dev['id']] = dev
 
         # Начальная инициалиация массивов
-        for addr in range(1, self.__MAX_ADDR__+1):
+        for addr in range(1, self.__MAX_ADDR__ + 1):
             self.devices[addr] = {
                 'device': self.device_config.get(0, None),
                 'data': {}
             }
-
 
     def find_device_by_id(self, id):
         device = self.device_config.get(id, {})
@@ -44,6 +48,9 @@ class ThreadDevicesNetwork(threading.Thread):
             'device': self.device_config.get(0, None),
             'data': {}
         }
+        self.device_list[addr] = {
+            'timeout': 999
+        }
 
     def add(self, addr, id):
         device_type = self.device_config.get(id)
@@ -51,6 +58,9 @@ class ThreadDevicesNetwork(threading.Thread):
         self.devices[addr] = {
             'device': device_type,
             'data': {}
+        }
+        self.device_list[addr] = {
+            'timeout': 0
         }
 
         for cmd in device_type['commands']:
@@ -60,46 +70,80 @@ class ThreadDevicesNetwork(threading.Thread):
 
         self.devices[addr]['data'][int('0702', 16)] = id
 
+    def set_port(self, port):
+        self.port = port
+        self.port_changed = True
+
     def kill(self):
         self.kill_received = True
 
     def run(self):
-        logging.info("TCP Server is started {:s} : {:d}".format(self.__ip, self.__port))
-        print("TCP Server is started {:s} : {:d}".format(self.__ip, self.__port))
+        logging.info("TCP Server is started {:s} : {:d}".format(self.ip, self.port))
+        print("TCP Server is started {:s} : {:d}".format(self.ip, self.port))
 
-        while not self.kill_received:
-            try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.bind((self.__ip, self.__port))
-                    s.listen(1)
-                    sock, addr = s.accept()
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        #     s.bind((self.ip, self.port))
+        #     s.listen(1)
+        #     while True:
+        #         conn, addr = s.accept()
+        #         with conn:
+        #             print('Connected by', addr)
+        #             while True:
+        #                 data = conn.recv(1024)
+        #                 print('\n rx', data, '\n')
+        #                 if not data: break
+        #                 conn.sendall(data)
+        #                 answer = self.modbus_handle(data)
+        #                 print('tx', data, '\n')
+        #                 print("modbus ", answer,  len(answer), '\n')
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind((self.ip, self.port))
+            print("Listen at port ", self.port)
+            s.listen(1)
+            while True:
+                sock, addr = s.accept()
+                with sock:
                     print('Connection address:', addr)
-                    rec_data = sock.recv(255)
-                    if rec_data:
-                        answer = self.modbus_handle(rec_data)
-                        if answer is not None:
-                            sock.send(answer)
 
-            except KeyboardInterrupt:
-                print("Ctrl-c received! Sending kill to threads")
-                self.kill_received = True
-                sleep(10)
+                    rec_data = sock.recv(255)
+                    if not rec_data:
+                        break
+                    # if rec_data:
+                    answer = self.modbus_handle(rec_data)
+                    if answer is not None:
+                        if len(answer) > 0:
+                            str = ""
+                            for c in answer:
+                                str += "{:02X}h ".format(c)
+                            print("Tx Data: ", str)
+                            sock.sendall(answer)
+                        else:
+                            break
+                    else:
+                        break
+                    # sock.close()
+                    if self.port_changed:
+                        self.port_changed = False
+                        s.close()
+                        s.bind((self.ip, self.port))
 
     def modbus_handle(self, rec):
         msg = ''
         for i in rec:
             msg += "{:02X}h ".format(i)
         print("received data:", msg)
+        answer = bytearray()
 
         if crc16(rec) != 0:
-            return None
+            return answer
         try:
-            answer = bytearray()
+
             addr = int(rec[0])
             cmd = int(rec[1])
             if 0 < addr <= self.__MAX_ADDR__:
-                dev_registers = self.device_data.get(addr)
-                if dev_registers is not None:
+                dev_registers = self.devices.get(addr)
+                if dev_registers.get('device') is not None:
                     self.device_list[addr]['timeout'] = 0
                     answer.append(addr)
                     if cmd == 0x03:
@@ -116,7 +160,7 @@ class ThreadDevicesNetwork(threading.Thread):
             elif addr == 0:
                 # Широковещательная команда установки параметров
                 cmd = int(rec[1])
-                for addr in range(1, self.__MAX_ADDR__+1):
+                for addr in range(1, self.__MAX_ADDR__ + 1):
                     dev_data = self.device_data.get(addr)
                     if dev_data is not None:
                         self.device_list[addr]['timeout'] = 0
@@ -151,48 +195,59 @@ class ThreadDevicesNetwork(threading.Thread):
         reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
         count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
         is_error = False
-        for i in range(count):
-            req = self.device_data.get(addr).get(reg + i)
-            if req is None:
-                is_error = True
-                break
+        device = self.devices.get(addr)
+        if device is not None:
+            devData = device.get('data')
+            if devData is not None:
+                for i in range(count):
+                    dat = devData.get(reg + i)
+                    if dat is None:
+                        is_error = True
+                        break
 
         if is_error is False:
             answer.append(cmd)
             answer.append(count * 2)
             for i in range(count):
-                value = self.device_data.get(addr).get(reg + i)
-                if value is not None:
-                    answer.append((value >> 8) & 0xff)
-                    answer.append(value & 0xff)
+                device = self.devices.get(addr)
+                if device is not None:
+                    value = device.get("data").get(reg + i)
+                    if value is not None:
+                        answer.append((value >> 8) & 0xff)
+                        answer.append(value & 0xff)
         else:
             # нет такого регистра. Ошибка!
             answer.append(0x80 | cmd)
             answer.append(0x02)
 
         return answer
-
 
     def modbus_write_signle(self, addr, rec) -> bytearray:
         answer = bytearray()
         cmd = 0x06
         reg = int(((rec[2] << 8) & 0xff00) + (rec[3] & 0xff))
         value = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
-        if self.device_data.get(addr).get(reg) is not None:
-            self.device_data.get(addr)[reg] = value
+        device = self.devices.get(addr)
+        if device is not None:
+            reg = device.get(addr).get(reg)
+            if reg is not None:
+                self.devices.get(addr)[reg] = value
 
-            answer.append(cmd)
-            answer.append(rec[2])
-            answer.append(rec[3])
-            answer.append(rec[4])
-            answer.append(rec[5])
+                answer.append(cmd)
+                answer.append(rec[2])
+                answer.append(rec[3])
+                answer.append(rec[4])
+                answer.append(rec[5])
+            else:
+                # нет такого регистра. Ошибка!
+                answer.append(0x80 | cmd)
+                answer.append(0x02)
         else:
             # нет такого регистра. Ошибка!
             answer.append(0x80 | cmd)
             answer.append(0x02)
 
         return answer
-
 
     def modbus_write_mult(self, addr, rec) -> bytearray:
         answer = bytearray()
@@ -202,14 +257,16 @@ class ThreadDevicesNetwork(threading.Thread):
         byte_count = int(rec[6])
         is_error = False
         for i in range(int(byte_count / 2)):
-            if self.device_data.get(addr).get(reg + i) is None:
-                is_error = True
-                break
+            device = self.devices.get(addr)
+            if device is not None:
+                if device.get(reg + i) is None:
+                    is_error = True
+                    break
 
         if is_error is False:
             for i in range(int(byte_count / 2)):
                 value = int(((rec[7 + 2 * i] << 8) & 0xff00) + (rec[8 + 2 * i] & 0xff))
-                self.device_data.get(addr)[reg + i] = value
+                self.devices.get(addr)[reg + i] = value
             answer.append(cmd)
             answer.append(rec[2])
             answer.append(rec[3])

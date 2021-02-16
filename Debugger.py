@@ -51,6 +51,17 @@ def device_types():
     }
     return jsonify(types)
 
+@app.route('/setup.json')
+def device_setup():
+    setup = {
+        'setup': {
+            'ip': threadNetwork.ip,
+            'port': threadNetwork.port
+        }
+    }
+    return jsonify(setup)
+
+
 @app.route('/actionAddr', methods=['POST'])
 def remove():
     data1 = json.loads(request.args.get('data'))
@@ -68,6 +79,14 @@ def remove():
             addr = int(data1['param']['addr'])
             type = int(data1['param']['type'])
             threadNetwork.add(addr, type)
+        except:
+            pass
+        finally:
+            pass
+    elif data1['cmd'] == 'port':
+        try:
+            port = int(data1['param']['port'])
+            threadNetwork.set_port(port)
         except:
             pass
         finally:
@@ -98,4 +117,4 @@ if __name__ == "__main__":
     threadNetwork.daemon = True
     threadNetwork.start()
 
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=80)
