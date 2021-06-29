@@ -68,7 +68,7 @@ class ThreadDevicesNetwork(threading.Thread):
             code = reg.get('code')
             self.devices[addr]['data'][int(code, 16)] = 0
 
-        self.devices[addr]['data'][int('0702', 16)] = id
+        self.devices[addr]['data'][int('0001', 16)] = id
 
     def set_port(self, port):
         self.port = port
@@ -81,52 +81,55 @@ class ThreadDevicesNetwork(threading.Thread):
         logging.info("TCP Server is started {:s} : {:d}".format(self.ip, self.port))
         print("TCP Server is started {:s} : {:d}".format(self.ip, self.port))
 
-        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        #     s.bind((self.ip, self.port))
-        #     s.listen(1)
-        #     while True:
-        #         conn, addr = s.accept()
-        #         with conn:
-        #             print('Connected by', addr)
-        #             while True:
-        #                 data = conn.recv(1024)
-        #                 print('\n rx', data, '\n')
-        #                 if not data: break
-        #                 conn.sendall(data)
-        #                 answer = self.modbus_handle(data)
-        #                 print('tx', data, '\n')
-        #                 print("modbus ", answer,  len(answer), '\n')
-
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.ip, self.port))
-            print("Listen at port ", self.port)
-            s.listen(1)
+            s.listen(10)
             while True:
-                sock, addr = s.accept()
-                with sock:
-                    print('Connection address:', addr)
+                conn, addr = s.accept()
+                with conn:
+                    print('Connected by', addr)
+                    while True:
+                        try:
+                            data = conn.recv(1024)
+                            print('\n rx (', len(data), ") ", data, '\n')
+                            if not data: break
+                            answer = self.modbus_handle(data)
 
-                    rec_data = sock.recv(255)
-                    if not rec_data:
-                        break
-                    # if rec_data:
-                    answer = self.modbus_handle(rec_data)
-                    if answer is not None:
-                        if len(answer) > 0:
-                            str = ""
-                            for c in answer:
-                                str += "{:02X}h ".format(c)
-                            print("Tx Data: ", str)
-                            sock.sendall(answer)
-                        else:
-                            break
-                    else:
-                        break
-                    # sock.close()
-                    if self.port_changed:
-                        self.port_changed = False
-                        s.close()
-                        s.bind((self.ip, self.port))
+                            conn.sendall(answer)
+                            print("tx ", answer, '\n')
+                        except:
+                            pass
+                        finally:
+                            pass
+
+
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        #     s.bind((self.ip, self.port))
+        #     print("Listen at port ", self.port)
+        #     s.listen(1)
+        #     while True:
+        #         sock, addr = s.accept()
+        #         with sock:
+        #             print('Connection address:', addr)
+        #
+        #             rec_data = sock.recv(255)
+        #             if not rec_data:
+        #                 break
+        #             # if rec_data:
+        #             answer = self.modbus_handle(rec_data)
+        #             # if len(answer) > 0:
+        #             str = ""
+        #             for c in answer:
+        #                 str += "{:02X}h ".format(c)
+        #             print("Tx Data: ", str)
+        #             sock.sendall(answer)
+        #             # else:
+        #             #     break
+        #             # sock.close()
+        #             if self.port_changed:
+        #                 self.port_changed = False
+        #                 s.close()
+        #                 s.bind((self.ip, self.port))
 
     def modbus_handle(self, rec):
         msg = ''
