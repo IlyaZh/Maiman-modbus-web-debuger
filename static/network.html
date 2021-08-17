@@ -1,0 +1,43 @@
+<div class="container">
+    <div class="row">
+        <div class="col s12">
+            <table class="responsive-table" style="padding: 0;">
+                <tr>
+                    <td>Адрес</td>
+                    <td ng-click="selectAddress(0)" style="cursor: pointer;">Все</td>
+                    <td ng-class="{
+                'green lighten-1 center-align ' : (dev_id.device != null),
+                'red lighten-3 center-align ' : (dev_id.device == null),
+                'yellow lighten-1 center-align' : ($index+1 == selected_addr)
+             }" ng-click="selectAddress($index+1)" ng-repeat="dev_id in network track by $index"
+                        style="cursor: pointer;">
+                        {{ $index+1 }}
+                    </td>
+                </tr>
+                <!--<tr>
+                    <td>Device</td>
+                    <td class="grey lighten-3" ng-repeat="dev_id in connected track by $index">{{ dev_id.id }}</td>
+                </tr>-->
+            </table>
+        </div>
+        <div class="row">
+            <div class="col s12">
+
+            </div>
+            <table class="responsive-table centered striped">
+                <tbody>
+                <tr ng-repeat="device in network track by $index">
+                    <td>{{$index+1}}</td>
+                    <td ng-repeat="(cmd, value) in device.data">
+                        <div class="center">
+                            {{hex(cmd)}}<br>
+                            {{value}}
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
