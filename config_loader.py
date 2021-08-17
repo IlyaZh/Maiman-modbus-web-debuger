@@ -10,7 +10,7 @@ class ConfigParser:
         return self.devices
 
     def start(self):
-        root = ET.parse('config.xml').getroot()
+        root = ET.parse('./config.xml').getroot()
 
         for device in root.iter("Device"):
             device_model = {}

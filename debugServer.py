@@ -1,10 +1,7 @@
-import threading
 import logging
-from time import sleep
 import socket
-from flask import Flask, jsonify
-from flask import json
-from flask import request
+import threading
+
 from modbus.modbusCrc import crc16
 
 
@@ -83,20 +80,24 @@ class ThreadDevicesNetwork(threading.Thread):
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.ip, self.port))
-            s.listen(10)
+            s.listen(30)
             while True:
                 conn, addr = s.accept()
                 with conn:
                     print('Connected by', addr)
                     while True:
+
                         try:
                             data = conn.recv(1024)
                             print('\n rx (', len(data), ") ", data, '\n')
                             if not data: break
                             answer = self.modbus_handle(data)
 
-                            conn.sendall(answer)
-                            print("tx ", answer, '\n')
+                            length = len(answer)
+                            print("Tx len = {:d}".format(length))
+                            if length > 0:
+                                conn.sendall(answer)
+                                print("tx ", answer, '\n')
                         except:
                             pass
                         finally:
