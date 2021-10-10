@@ -82,11 +82,15 @@ class ThreadDevicesNetwork(threading.Thread):
             s.bind((self.ip, self.port))
             s.listen(30)
             while True:
-                conn, addr = s.accept()
+                try:
+                    conn, addr = s.accept()
+                except socket.timeout:
+                    print("Timeout socket")
+                    pass
+
                 with conn:
                     print('Connected by', addr)
                     while True:
-
                         try:
                             data = conn.recv(1024)
                             print('\n rx (', len(data), ") ", data, '\n')
@@ -99,8 +103,6 @@ class ThreadDevicesNetwork(threading.Thread):
                                 conn.sendall(answer)
                                 print("tx ", answer, '\n')
                         except:
-                            pass
-                        finally:
                             pass
 
 

@@ -39,7 +39,7 @@ def network():
 @app.route('/data.json')
 def device_data():
     db = {
-        'network' :threadNetwork.devices
+        'network': threadNetwork.devices
           }
     return jsonify(db)
 
@@ -109,12 +109,18 @@ def remove():
 
 if __name__ == "__main__":
     print("Hello! Let's start! \n\n")
+    port = 502
+    host = '127.0.0.1'
 
     parser = ConfigParser('config.xml')
     parser.start()
-    threadNetwork = ThreadDevicesNetwork(parser.model(), '127.0.0.1', 502)
+    threadNetwork = ThreadDevicesNetwork(parser.model(), host, port)
+    print('Webserver started http://{0}:{1}/'.format(host, 80))
 
     threadNetwork.daemon = True
     threadNetwork.start()
+
+    # DEBUG ONLY
+    threadNetwork.add(2, 17)
 
     app.run(host='0.0.0.0', port=80)
