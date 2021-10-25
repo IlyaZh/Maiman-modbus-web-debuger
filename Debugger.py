@@ -1,5 +1,3 @@
-# coding=utf-8
-
 from config_loader import ConfigParser
 from debugServer import ThreadDevicesNetwork
 from flask import Flask, request, jsonify, json
@@ -42,8 +40,10 @@ def network():
 @app.route('/data.json')
 def device_data():
     db = {
-        'network': threadNetwork.devices
-    }
+        # 'network': threadNetwork.devices
+        'network': threadNetwork.forJson()
+          }
+
     return jsonify(db)
 
 

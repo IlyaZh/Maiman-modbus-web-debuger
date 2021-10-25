@@ -1,7 +1,7 @@
 import logging
 import socket
 import threading
-
+from modbusDriver import device
 from modbus.modbusCrc import crc16
 
 
@@ -32,34 +32,55 @@ class ThreadDevicesNetwork(threading.Thread):
         # Начальная инициалиация массивов
         for addr in range(1, self.__MAX_ADDR__ + 1):
             self.devices[addr] = {
+                'device': None,
+                'data': {},
+                'driver': None
+            }
+        '''
+        for addr in range(1, self.__MAX_ADDR__ + 1):
+            self.devices[addr] = {
                 'device': self.device_config.get(0, None),
                 'data': {}
             }
-
+        '''
     def find_device_by_id(self, id):
         device = self.device_config.get(id, {})
         return device
 
     def remove(self, addr):
         self.devices[addr] = {
-            'device': self.device_config.get(0, None),
-            'data': {}
+            #'device': self.device_config.get(0, None),
+            'device': None,
+            'data': {},
+            'driver': None
         }
         self.device_list[addr] = {
             'timeout': 999
         }
 
-    def add(self, addr, id):
-        device_type = self.device_config.get(id)
+    def forJson(self):
+        devices = {}
+        for addr in range(1, self.__MAX_ADDR__ +1):
+            devices[addr] = {
+                "device": self.devices[addr].get("device"),
+                "data": self.devices[addr].get("data")
+            }
+        return devices
 
+    def add(self, addr, id):
+        # device_type = self.device_config.get(id)
+        device_type = device(id)
         self.devices[addr] = {
-            'device': device_type,
-            'data': {}
+            'device': device_type.config,
+            'data': {},
+            'driver': device_type
         }
         self.device_list[addr] = {
             'timeout': 0
         }
-
+        self.devices[addr]['data'][int('0001', 16)] = device_type.id
+        self.devices[addr]['data'] = device_type.__device__.copy()
+        '''
         for cmd in device_type['commands']:
             reg = device_type['commands'][cmd]
             code = int(reg.get('code'), 16)
@@ -78,7 +99,7 @@ class ThreadDevicesNetwork(threading.Thread):
 
 
         self.devices[addr]['data'][int('0001', 16)] = id
-
+'''
     def set_port(self, port):
         self.port = port
         self.port_changed = True
@@ -235,7 +256,8 @@ class ThreadDevicesNetwork(threading.Thread):
             for i in range(count):
                 device = self.devices.get(addr)
                 if device is not None:
-                    value = device.get("data").get(reg + i)
+                    # value = device.get("data").get(reg + i)
+                    value = device.get("driver").getRegister(reg, i).get(reg)
                     if value is not None:
                         answer.append((value >> 8) & 0xff)
                         answer.append(value & 0xff)
@@ -264,6 +286,7 @@ class ThreadDevicesNetwork(threading.Thread):
                 answer.append(reg & 0xff)
                 answer.append((value >> 8) & 0xff)
                 answer.append(value & 0xff)
+
             else:
                 # нет такого регистра. Ошибка!
                 answer.append(0x86)
