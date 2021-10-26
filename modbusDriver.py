@@ -4,16 +4,17 @@ import os
 
 
 class device:
-    def __init__(self, device_model):
+    def __init__(self, device_model, device_id):
         parser = ConfigParser('config.xml')
         parser.start()
-        self.config = parser.model()
+        # self.config = parser.model()
+        self.config = device_model
         self.__device__ = {}
 
         for dev_id in self.config:
             dev_mode = self.config.get(dev_id)
             id_device = dev_mode.get('id')
-            if device_model == id_device:
+            if device_id == id_device:
                 self.id = dev_mode.get('id', 0)
                 self.name = dev_mode.get('name', "")
                 self.content = dev_mode.get('content', dict(image=None, description='', link='#'))
@@ -35,14 +36,14 @@ class device:
                 else:
                     return 0
             return commands
-
+    '''
     def readDefault(self):
         if self.id != 0:
             data = defaultValuesReader().readJSON(self.id)
             for code in self.__device__:
                 if data.get(str(hex(code))[2:]) is not None:
                     self.__device__[code] = data.get(str(hex(code))[2:])
-
+    '''
 
 class defaultValuesReader:
     def readJSON(self, id):
@@ -64,7 +65,10 @@ class driverMap:
 
 if __name__ == "__main__":
     de = {}
-    dev = device(0x101)
+    parser = ConfigParser('config.xml')
+    parser.start()
+
+    dev = device(parser.model(), 0x101)
     de[1] = {
         'device': dev.config,
         'data': {},
@@ -78,7 +82,6 @@ if __name__ == "__main__":
     print(dev.__device__)
     print(de.get(1).get("driver").getRegister(6, 1))
     print(de[1]["driver"].getRegister(6, 2))
-    dev.readDefault()
     for x in dev.__device__:
         print(dev.__device__[x])
     os.chdir(os.path.abspath(os.path.dirname(__file__)))

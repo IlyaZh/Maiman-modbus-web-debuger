@@ -1,7 +1,7 @@
 import logging
 import socket
 import threading
-from modbusDriver import device
+from modbusDriver import device, defaultValuesReader
 from modbus.modbusCrc import crc16
 
 
@@ -14,6 +14,7 @@ class ThreadDevicesNetwork(threading.Thread):
         self.kill_received = False
         self.device_config = device_models
         self.devices = {}
+        self.default = {}
         self.__TIMEOUT__ = 3000
         self.device_list = {}
 
@@ -28,6 +29,7 @@ class ThreadDevicesNetwork(threading.Thread):
             content = dev_mode.get('content', dict(image=None, description='', link='#'))
             dev = dict(id=id, name=name, content=content)
             # self.device_types[dev['id']] = dev
+            self.default[id] = defaultValuesReader().readJSON(id)
 
         # Начальная инициалиация массивов
         for addr in range(1, self.__MAX_ADDR__ + 1):
@@ -68,23 +70,25 @@ class ThreadDevicesNetwork(threading.Thread):
         return devices
 
     def add(self, addr, id):
-        # device_type = self.device_config.get(id)
-        device_type = device(id)
+        device_type = self.device_config.get(id)
+        solo_device = device(self.device_config, id)
         self.devices[addr] = {
-            'device': device_type.config,
+            'device': solo_device.config,
             'data': {},
-            'driver': device_type
+            'driver': solo_device
         }
         self.device_list[addr] = {
             'timeout': 0
         }
-        self.devices[addr]['data'][int('0001', 16)] = device_type.id
-        self.devices[addr]['data'] = device_type.__device__.copy()
-        '''
+
         for cmd in device_type['commands']:
             reg = device_type['commands'][cmd]
             code = int(reg.get('code'), 16)
             # DEBUG DELETE ILIA
+            if self.default[id].get(str(hex(code))[2:]) is not None:
+                solo_device.__device__[code] = self.default[id].get(str(hex(code))[2:])
+
+            '''
             if code == 0x21:
                 self.devices[addr]['data'][code] = 1000
             elif code == 0x23:
@@ -99,7 +103,10 @@ class ThreadDevicesNetwork(threading.Thread):
 
 
         self.devices[addr]['data'][int('0001', 16)] = id
-'''
+        '''
+        self.devices[addr]['data'][int('0001', 16)] = solo_device.id
+        self.devices[addr]['data'] = solo_device.__device__.copy()
+
     def set_port(self, port):
         self.port = port
         self.port_changed = True
