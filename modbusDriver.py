@@ -1,5 +1,6 @@
-
+from flask import json
 from config_loader import ConfigParser
+import os
 
 
 class device:
@@ -35,6 +36,26 @@ class device:
                     return 0
             return commands
 
+    def readDefault(self):
+        if self.id != 0:
+            data = defaultValuesReader().readJSON(self.id)
+            for code in self.__device__:
+                if data.get(str(hex(code))[2:]) is not None:
+                    self.__device__[code] = data.get(str(hex(code))[2:])
+
+
+class defaultValuesReader:
+    def readJSON(self, id):
+        data = {}
+        name = str(hex(id))[2:] + ".json"
+        path = "defaults/" + name
+        try:
+            with open(path) as json_file:
+                data = json.load(json_file)
+        except FileNotFoundError:
+            print("File {} is not found!".format(path))
+        return data
+
 
 class driverMap:
     def __init__(self, Commands, Registers):
@@ -43,17 +64,23 @@ class driverMap:
 
 if __name__ == "__main__":
     de = {}
-    dev = device(0x611)
+    dev = device(0x101)
     de[1] = {
-            'device': dev.config,
-            'data': {},
-            'driver': dev
-        }
+        'device': dev.config,
+        'data': {},
+        'driver': dev
+    }
 
     dev.setRegister(6, 150)
     print(dev.getRegister(6, 3))
     print(dev.name)
     print(dev.id)
     print(dev.__device__)
-    print(de.get(1).get("driver").getRegister(6,1))
-    print(de[1]["driver"].getRegister(6,2))
+    print(de.get(1).get("driver").getRegister(6, 1))
+    print(de[1]["driver"].getRegister(6, 2))
+    dev.readDefault()
+    for x in dev.__device__:
+        print(dev.__device__[x])
+    os.chdir(os.path.abspath(os.path.dirname(__file__)))
+    print(os.getcwd() + r"\static\js")
+    print(os.path.isfile(os.getcwd() + r"\static\js\myCtrl.js"))

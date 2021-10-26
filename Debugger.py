@@ -41,7 +41,7 @@ def network():
 def device_data():
     db = {
         # 'network': threadNetwork.devices
-        'network': threadNetwork.forJson()
+        'network': threadNetwork.json()
           }
 
     return jsonify(db)

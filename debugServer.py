@@ -58,7 +58,7 @@ class ThreadDevicesNetwork(threading.Thread):
             'timeout': 999
         }
 
-    def forJson(self):
+    def json(self):
         devices = {}
         for addr in range(1, self.__MAX_ADDR__ +1):
             devices[addr] = {
