@@ -4,23 +4,23 @@ import os
 
 
 class device:
-    def __init__(self, device_model, device_id):
-        parser = ConfigParser('config.xml')
-        parser.start()
-        # self.config = parser.model()
+    def __init__(self, id, device_model, defaults):
         self.config = device_model
         self.__device__ = {}
-
-        for dev_id in self.config:
-            dev_mode = self.config.get(dev_id)
-            id_device = dev_mode.get('id')
-            if device_id == id_device:
-                self.id = dev_mode.get('id', 0)
-                self.name = dev_mode.get('name', "")
-                self.content = dev_mode.get('content', dict(image=None, description='', link='#'))
-                for cmd in dev_mode['commands']:
-                    reg = dev_mode['commands'][cmd]
-                    code = reg.get('code')
+        self.id = id
+        # self.config.get('id', 0)
+        # self.name = self.config.get('name', "")
+        # self.content = self.config.get('content', dict(image=None, description='', link='#'))
+        if any(self.config):
+            for cmd in self.config['commands']:
+                reg = self.config['commands'][cmd]
+                code = reg.get('code')
+                if any(defaults):
+                    if defaults.get(str(hex(int(code, 16)))[2:]) is not None:
+                        self.__device__[int(code, 16)] = defaults.get(str(hex(int(code, 16)))[2:])# defaults[str(id)].get(str(hex(code))[2:])
+                    else:
+                        self.__device__[int(code, 16)] = 0
+                else:
                     self.__device__[int(code, 16)] = 0
 
     def setRegister(self, command, value):
@@ -36,6 +36,7 @@ class device:
                 else:
                     return 0
             return commands
+
     '''
     def readDefault(self):
         if self.id != 0:
@@ -44,6 +45,7 @@ class device:
                 if data.get(str(hex(code))[2:]) is not None:
                     self.__device__[code] = data.get(str(hex(code))[2:])
     '''
+
 
 class defaultValuesReader:
     def readJSON(self, id):

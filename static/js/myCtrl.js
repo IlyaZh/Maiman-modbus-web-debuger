@@ -144,6 +144,24 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
 		$scope.getData();
     }
 
+    $scope.setValue = function(addr, reg, value){
+        var cmd =
+            {
+            "setValue": "modify"
+            "param":{
+                "addr": addr,
+                "reg": reg,
+                "value": value
+                }
+            };
+            $http({ url: "/actionAddr",
+                method: 'POST',
+                params: { data:cmd }
+              }).then(function (answ) {
+                console.log(cmd)
+              })
+    }
+
     $scope.getTypes();
     $scope.getData();
 });
