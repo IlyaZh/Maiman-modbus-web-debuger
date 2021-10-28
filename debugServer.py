@@ -73,9 +73,14 @@ class ThreadDevicesNetwork(threading.Thread):
                     "data": {}
                 }
             else:
+                data = {}
+                for cmd in self.devices[addr].config['commands']:
+                    reg = self.devices[addr].config['commands'][cmd]
+                    code = reg.get('code')
+                    data[code] = self.devices[addr].__device__[int(code, 16)]
                 devices[addr] = {
                     "device": self.devices[addr].config,
-                    "data": self.devices[addr].__device__
+                    "data": data #self.devices[addr].__device__
                 }
         return devices
 
@@ -123,7 +128,7 @@ class ThreadDevicesNetwork(threading.Thread):
 
     def modify(self, addr: int, reg: int, value: int):
         if self.devices.get(addr) is not None:
-            if self.devices.get(addr).__device__.at(reg) is not None:
+            if self.devices.get(addr).__device__.get(reg) is not None:
                 self.devices.get(addr).setRegister(reg, value)
         '''
         if self.devices.at(addr) is not None:

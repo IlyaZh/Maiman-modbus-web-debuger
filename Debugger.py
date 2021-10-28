@@ -93,7 +93,7 @@ def commandHandler():
     elif data1['cmd'] == 'setValue':
         try:
             addr = int(data1['param']['addr'])
-            reg = int(data1['param']['reg'])
+            reg = int(data1['param']['reg'], 16)
             value = int(data1['param']['value'])
             threadNetwork.modify(addr, reg, value)
         finally:

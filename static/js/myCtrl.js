@@ -147,7 +147,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
     $scope.setValue = function(addr, reg, value){
         var cmd =
             {
-            "setValue": "modify"
+            "cmd": "setValue",
             "param":{
                 "addr": addr,
                 "reg": reg,
@@ -161,7 +161,19 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
                 console.log(cmd)
               })
     }
-
+    $scope.getValues = function() {
+    $timeout(function () {
+        $http({
+            url: 'data.json?r=' + Math.random(),
+            method: 'GET'
+        }).then(function (answ) {
+            $scope.network = answ.data.network;
+            // console.log($scope.setupData)
+        });
+       $scope.getValues();
+    }, 100 );
+    }
+    $scope.getValues();
     $scope.getTypes();
     $scope.getData();
 });
@@ -199,6 +211,7 @@ app.controller('setupCtrl', function($scope, $http, $timeout) {
            $scope.getSetup();
         }, 2000 );
     }
+
 
     $scope.getSetup();
 });
