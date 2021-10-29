@@ -1,4 +1,9 @@
 /.idea
 /log.log
 __pycache__/
-/venv
+/venvECHO is on.
+/Include/
+/Scripts/
+/venv/
+/pyenv.cfg
+/Lib/*
