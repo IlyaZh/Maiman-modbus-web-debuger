@@ -144,6 +144,36 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
 		$scope.getData();
     }
 
+    $scope.setValue = function(addr, reg, value){
+        var cmd =
+            {
+            "cmd": "setValue",
+            "param":{
+                "addr": addr,
+                "reg": reg,
+                "value": value
+                }
+            };
+            $http({ url: "/actionAddr",
+                method: 'POST',
+                params: { data:cmd }
+              }).then(function (answ) {
+                console.log(cmd)
+              })
+    }
+    $scope.getValues = function() {
+    $timeout(function () {
+        $http({
+            url: 'data.json?r=' + Math.random(),
+            method: 'GET'
+        }).then(function (answ) {
+            $scope.network = answ.data.network;
+            // console.log($scope.setupData)
+        });
+       $scope.getValues();
+    }, 100 );
+    }
+    $scope.getValues();
     $scope.getTypes();
     $scope.getData();
 });
@@ -181,6 +211,7 @@ app.controller('setupCtrl', function($scope, $http, $timeout) {
            $scope.getSetup();
         }, 2000 );
     }
+
 
     $scope.getSetup();
 });

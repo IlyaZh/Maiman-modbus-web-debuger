@@ -41,7 +41,7 @@ def network():
 def device_data():
     db = {
         # 'network': threadNetwork.devices
-        'network': threadNetwork.forJson()
+        'network': threadNetwork.json()
           }
 
     return jsonify(db)
@@ -93,7 +93,7 @@ def commandHandler():
     elif data1['cmd'] == 'setValue':
         try:
             addr = int(data1['param']['addr'])
-            reg = int(data1['param']['reg'])
+            reg = int(data1['param']['reg'], 16)
             value = int(data1['param']['value'])
             threadNetwork.modify(addr, reg, value)
         finally:
@@ -128,6 +128,6 @@ if __name__ == "__main__":
     threadNetwork.start()
 
     # DEBUG ONLY
-    threadNetwork.add(2, 17)
-
+    threadNetwork.add(2, 257)
+    threadNetwork.add(1, 257)
     app.run(host='0.0.0.0', port=80)

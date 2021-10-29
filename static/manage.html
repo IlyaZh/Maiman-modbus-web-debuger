@@ -41,20 +41,28 @@
                                 <td>Команда</td>
                                 <td>Точность</td>
                                 <td>Единицы</td>
+                                <td>Значение</td>>
+                                <td>Ввод</td>
+                                <td> </td>>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td>0</td>
                                 <td>0x0702</td>
-                                <td>{{network[selected_addr].device.id}}</td>
                                 <td>-</td>
+                                <td>-</td>
+                                <td>{{network[selected_addr].device.id}}</td>>
+
                             </tr>
                             <tr ng-repeat="cmd in network[selected_addr].device.commands track by $index">
                                 <td>{{$index}}</td>
                                 <td>0x{{cmd.code}}</td>
                                 <td>{{ (cmd.divider > 0) ? (1/cmd.divider) : 1 }}</td>
                                 <td>{{ (cmd.unit != null) ? cmd.unit : '-' }}</td>
+                                <td>{{network[selected_addr].data[cmd.code]}}</td>
+                                <td><input id="input_text" type="text" ng-model="nValue" class="validate"> </td>
+                                <td class="valign-wrapper" ng-click="setValue(selected_addr, cmd.code, nValue)" class="btn-floating btn-small waves-effect waves-light"><i class="material-icons">send</i></td>
                             </tr>
                         </tbody>
                     </table>
