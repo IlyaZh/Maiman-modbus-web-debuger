@@ -1,7 +1,8 @@
 import logging
 import socket
 import threading
-from modbusDriver import device, defaultValuesReader
+from modbusDriver import device
+from default import defaultValuesReader
 from modbus.modbusCrc import crc16
 
 

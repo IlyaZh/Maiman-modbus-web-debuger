@@ -1,7 +1,3 @@
-from flask import json
-from config_loader import ConfigParser
-import os
-
 
 class device:
     def __init__(self, id, device_model, defaults):
@@ -24,7 +20,31 @@ class device:
                     self.__device__[int(code, 16)] = 0
 
     def setRegister(self, command, value):
-        if not self.__device__.get(command) == value and any(self.__device__):
+        if command == 4:
+            if not self.__device__.get(command) == value and any(self.__device__):
+                data = self.__device__[command]
+                if value == 8:
+                    data = data | (1 << 1)
+                elif value == 16:
+                    data = data & ~(1 << 1)
+                if value == 32:
+                    data = data | (1 << 2)
+                elif value == 64:
+                    data = data & ~(1 << 2)
+                if value == 512:
+                    data = data & ~(1 << 4)
+                elif value == 1024:
+                    data = data | (1 << 4)
+                if value == 4096:
+                    data = data & ~(1 << 7)
+                elif value == 8192:
+                    data = data | (1 << 7)
+                if value == 16384:
+                    data = data | (1 << 6)
+                elif value == 32768:
+                    data = data & ~(1 << 6)
+                self.__device__[command] = data
+        elif not self.__device__.get(command) == value and any(self.__device__):
             self.__device__[command] = value
 
     def getRegister(self, command, count):
@@ -45,47 +65,3 @@ class device:
                 if data.get(str(hex(code))[2:]) is not None:
                     self.__device__[code] = data.get(str(hex(code))[2:])
     '''
-
-
-class defaultValuesReader:
-    def readJSON(self, id):
-        data = {}
-        name = str(hex(id))[2:] + ".json"
-        path = "defaults/" + name
-        try:
-            with open(path) as json_file:
-                data = json.load(json_file)
-        except FileNotFoundError:
-            print("File {} is not found!".format(path))
-        return data
-
-
-class driverMap:
-    def __init__(self, Commands, Registers):
-        self.map = {}
-
-
-if __name__ == "__main__":
-    de = {}
-    parser = ConfigParser('config.xml')
-    parser.start()
-
-    dev = device(parser.model(), 0x101)
-    de[1] = {
-        'device': dev.config,
-        'data': {},
-        'driver': dev
-    }
-
-    dev.setRegister(6, 150)
-    print(dev.getRegister(6, 3))
-    print(dev.name)
-    print(dev.id)
-    print(dev.__device__)
-    print(de.get(1).get("driver").getRegister(6, 1))
-    print(de[1]["driver"].getRegister(6, 2))
-    for x in dev.__device__:
-        print(dev.__device__[x])
-    os.chdir(os.path.abspath(os.path.dirname(__file__)))
-    print(os.getcwd() + r"\static\js")
-    print(os.path.isfile(os.getcwd() + r"\static\js\myCtrl.js"))
