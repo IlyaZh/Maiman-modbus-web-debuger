@@ -30,7 +30,7 @@
                     <td>{{$index+1}}</td>
                     <td ng-repeat="(cmd, value) in device.data">
                         <div class="center">
-                            0x{{cmd}}<br>
+                            {{hex(cmd)}}<br>
                             {{value}}
                         </div>
                     </td>

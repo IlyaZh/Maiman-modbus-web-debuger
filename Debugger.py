@@ -1,7 +1,9 @@
+import logging
+
+from flask import Flask, request, jsonify, json
+
 from config_loader import ConfigParser
 from debugServer import ThreadDevicesNetwork
-from flask import Flask, request, jsonify, json
-import logging
 
 timeout_ms = 5
 
@@ -41,7 +43,7 @@ def network():
 def device_data():
     db = {
         # 'network': threadNetwork.devices
-        'network': threadNetwork.json()
+        'network': threadNetwork.devices_map()
           }
 
     return jsonify(db)

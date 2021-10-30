@@ -1,28 +1,41 @@
 
-class device:
-    def __init__(self, id, device_model, defaults):
+class Device:
+    config = None
+    __data__ = {}
+    id = 0
+
+    def __init__(self, device_model, defaults):
         self.config = device_model
-        self.__device__ = {}
-        self.id = id
+        self.__data__ = {}
+        self.id = self.config.get('id', 0)
         # self.config.get('id', 0)
         # self.name = self.config.get('name', "")
         # self.content = self.config.get('content', dict(image=None, description='', link='#'))
+
+        self.__data__[1] = self.config.get('id', 0)
         if any(self.config):
             for cmd in self.config['commands']:
                 reg = self.config['commands'][cmd]
                 code = reg.get('code')
                 if any(defaults):
                     if defaults.get(str(hex(int(code, 16)))[2:]) is not None:
-                        self.__device__[int(code, 16)] = defaults.get(str(hex(int(code, 16)))[2:])# defaults[str(id)].get(str(hex(code))[2:])
+                        self.__data__[int(code, 16)] = defaults.get(
+                            str(hex(int(code, 16)))[2:])  # defaults[str(id)].get(str(hex(code))[2:])
                     else:
-                        self.__device__[int(code, 16)] = 0
+                        self.__data__[int(code, 16)] = 0
                 else:
-                    self.__device__[int(code, 16)] = 0
+                    self.__data__[int(code, 16)] = 0
 
-    def setRegister(self, command, value):
-        if command == 4:
-            if not self.__device__.get(command) == value and any(self.__device__):
-                data = self.__device__[command]
+    def get_commands_list(self):
+        list = []
+        for item in self.__data__:
+            list.append(item)
+        return list;
+
+    def set_register(self, command, value):
+        if not self.__data__.get(command) == value and any(self.__data__):
+            if command == 4:
+                data = self.__data__[command]
                 if value == 8:
                     data = data | (1 << 1)
                 elif value == 16:
@@ -43,19 +56,22 @@ class device:
                     data = data | (1 << 6)
                 elif value == 32768:
                     data = data & ~(1 << 6)
-                self.__device__[command] = data
-        elif not self.__device__.get(command) == value and any(self.__device__):
-            self.__device__[command] = value
+                self.__data__[command] = data
+                return True
+            elif command == 1:
+                pass
+            elif not self.__data__.get(command) == value and any(self.__data__):
+                self.__data__[command] = value
+                return True
+        return False
 
-    def getRegister(self, command, count):
+    def get_register(self, reg, count):
         commands = {}
-        if any(self.__device__):
+        if any(self.__data__):
             for iCount in range(0, count):
-                if (command + iCount) in self.__device__:
-                    commands[command + iCount] = self.__device__[command + iCount]
-                else:
-                    return 0
-            return commands
+                if (reg + iCount) in self.__data__:
+                    commands[reg + iCount] = self.__data__[reg + iCount]
+        return commands
 
     '''
     def readDefault(self):

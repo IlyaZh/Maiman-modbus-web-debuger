@@ -1,12 +1,14 @@
 import logging
 import socket
 import threading
-from modbusDriver import device
+
+from Device import Device
 from default import defaultValuesReader
 from modbus.modbusCrc import crc16
 
 
 class ThreadDevicesNetwork(threading.Thread):
+
     def __init__(self, device_models, in_ip='127.0.0.1', inPort=502):
         threading.Thread.__init__(self)
         self.port = inPort
@@ -14,11 +16,10 @@ class ThreadDevicesNetwork(threading.Thread):
         self.__change_setup = False
         self.kill_received = False
         self.device_config = device_models
-        self.devices = {}
-        self.default = {}
         self.__TIMEOUT__ = 3000
         self.device_list = {}
-
+        self.devices = {}
+        self.default = {}
         self.port_changed = False
 
         self.__MAX_ADDR__ = 32
@@ -34,7 +35,7 @@ class ThreadDevicesNetwork(threading.Thread):
 
         # Начальная инициалиация массивов
         for addr in range(1, self.__MAX_ADDR__ + 1):
-            self.devices[addr] = device(0, {}, {})
+            self.devices[addr] = Device({}, {})
             '''
             self.devices[addr] = {
                 'device': None,
@@ -54,7 +55,7 @@ class ThreadDevicesNetwork(threading.Thread):
         return device
 
     def remove(self, addr):
-        self.devices[addr] = device(0, {}, {})
+        self.devices[addr] = Device(0, {}, {})
         '''{
             # 'device': self.device_config.get(0, None),
             'device': None,
@@ -65,31 +66,34 @@ class ThreadDevicesNetwork(threading.Thread):
             'timeout': 999
         }
 
-    def json(self):
+    def devices_map(self):
         devices = {}
         for addr in range(1, self.__MAX_ADDR__ + 1):
-            if self.devices.get(addr).id == 0:
+            device = self.devices.get(addr)
+            if device.id == 0:
                 devices[addr] = {
                     "device": None,
                     "data": {}
                 }
             else:
                 data = {}
-                for cmd in self.devices[addr].config['commands']:
-                    reg = self.devices[addr].config['commands'][cmd]
-                    code = reg.get('code')
-                    data[code] = self.devices[addr].__device__[int(code, 16)]
+                device = self.devices.get(addr)
+                list = device.get_commands_list()
+                for reg in list:
+                    # reg = self.devices[addr].config['commands'][cmd]
+                    # code = reg.get('code')
+                    # data[reg] = self.devices[addr].__data__[reg]
+                    data[reg] = device.get_register(reg, 1).get(reg)
                 devices[addr] = {
-                    "device": self.devices[addr].config,
-                    "data": data #self.devices[addr].__device__
+                    "device": device.config,
+                    "data": data  # self.devices[addr].__device__
                 }
         return devices
 
     def add(self, addr, id):
         device_type = self.device_config.get(id)
-        solo_device = device(id, device_type, self.default.get(id))
-        solo_device.id = id
-        self.devices[addr] = solo_device
+        device = Device(device_type, self.default.get(id))
+        self.devices[addr] = device
         # 'data': {},
         # 'driver': solo_device
 
@@ -129,8 +133,8 @@ class ThreadDevicesNetwork(threading.Thread):
 
     def modify(self, addr: int, reg: int, value: int):
         if self.devices.get(addr) is not None:
-            if self.devices.get(addr).__device__.get(reg) is not None:
-                self.devices.get(addr).setRegister(reg, value)
+            if self.devices.get(addr).__data__.get(reg) is not None:
+                self.devices.get(addr).set_register(reg, value)
         '''
         if self.devices.at(addr) is not None:
             if self.devices.at(addr).at('data').at(reg) is not None:
@@ -168,7 +172,7 @@ class ThreadDevicesNetwork(threading.Thread):
                             # print("Tx len = {:d}".format(length))
                             if length > 0:
                                 conn.sendall(answer)
-                                # print("tx ", answer, '\n')
+                                print("tx ", answer, '\n')
                         except:
                             pass
 
@@ -214,7 +218,7 @@ class ThreadDevicesNetwork(threading.Thread):
             addr = int(rec[0])
             cmd = int(rec[1])
             if 0 < addr <= self.__MAX_ADDR__:
-                dev_registers = self.devices.get(addr)
+                # dev_registers = self.devices.get(addr)
                 #if dev_registers.get('device') is not None:
                 self.device_list[addr]['timeout'] = 0
                 answer.append(addr)
@@ -268,26 +272,20 @@ class ThreadDevicesNetwork(threading.Thread):
         count = int(((rec[4] << 8) & 0xff00) + (rec[5] & 0xff))
         is_error = False
         device = self.devices.get(addr)
+        devData = {}
         if device is not None:
-            devData = device.__device__
-            if devData is not None:
-                for i in range(count):
-                    dat = devData.get(reg + i)
-                    if dat is None:
-                        is_error = True
-                        break
+            devData = device.get_register(reg, count)
+            if len(devData) == 0:
+                is_error = True
 
         if is_error is False:
             answer.append(cmd)
             answer.append(count * 2)
-            for i in range(count):
-                device = self.devices.get(addr)
-                if device is not None:
-                    # value = device.get("data").get(reg + i)
-                    value = device.getRegister(reg, i).get(reg)
-                    if value is not None:
-                        answer.append((value >> 8) & 0xff)
-                        answer.append(value & 0xff)
+
+            for reg in devData:
+                value = devData[reg]
+                answer.append((value >> 8) & 0xff)
+                answer.append(value & 0xff)
         else:
             # нет такого регистра. Ошибка!
             answer.append(0x80 | cmd)
@@ -304,10 +302,7 @@ class ThreadDevicesNetwork(threading.Thread):
 
         device = self.devices.get(addr)
         if device is not None:
-            int_reg = device.getRegister(reg, 1).get(reg)
-            if int_reg is not None:
-                #device["data"][reg] = value
-                device.setRegister(reg, value)
+            if device.set_register(reg, value):
                 answer.append(0x06)
                 answer.append((reg >> 8) & 0xff)
                 answer.append(reg & 0xff)
@@ -335,14 +330,14 @@ class ThreadDevicesNetwork(threading.Thread):
         for i in range(int(byte_count / 2)):
             device = self.devices.get(addr)
             if device is not None:
-                if device.getRegister(reg, i).get(reg) is None:
+                if device.get_register(reg, i).get(reg) is None:
                     is_error = True
                     break
 
         if is_error is False:
             for i in range(int(byte_count / 2)):
                 value = int(((rec[7 + 2 * i] << 8) & 0xff00) + (rec[8 + 2 * i] & 0xff))
-                self.devices.get(addr).__device__[str(reg + i)] = value
+                self.devices.get(addr).__data__[str(reg + i)] = value
             answer.append(cmd)
             answer.append(rec[2])
             answer.append(rec[3])
