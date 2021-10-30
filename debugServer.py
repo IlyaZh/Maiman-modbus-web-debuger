@@ -172,7 +172,7 @@ class ThreadDevicesNetwork(threading.Thread):
                             # print("Tx len = {:d}".format(length))
                             if length > 0:
                                 conn.sendall(answer)
-                                print("tx ", answer, '\n')
+                                # print("tx ", answer, '\n')
                         except:
                             pass
 
