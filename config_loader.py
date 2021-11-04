@@ -43,20 +43,20 @@ class ConfigParser:
                 for cmd in commands:
                     code = int(cmd.get('code'), 16)
                     device_commands[code] = cmd.attrib
-                    if device_commands[code].get('unit','-') == '(deg)':
+                    if device_commands[code].get('unit', '-') == '(deg)':
                         device_commands[code]['unit'] = '°C'
 
             device_model['commands'] = device_commands
 
-            device_params = {}
-            params = device.find("Param")
-            if params is not None:
-                for param in params:
-                    min = param.get('min')
-                    max = param.get('max')
-                    value = param.get('value')
-                    real = param.get('real')
-            device_model['params'] = device_params
+            # device_params = {}
+            # params = device.find("Param")
+            # if params is not None:
+            #     for param in params:
+            #         min = param.get('min')
+            #         max = param.get('max')
+            #         value = param.get('value')
+            #         real = param.get('real')
+            # device_model['params'] = device_params
 
             self.devices[device_id] = device_model
             # self.devices.append(DeviceDataModel(device_model))

@@ -77,7 +77,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
             }).then(function (answ) {
                 $scope.network = answ.data.network;
             });
-//            $scope.getData();
+            $scope.getData();
         }, 100 );
   };
 
@@ -123,7 +123,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
 				  }).then(function (answ) {
                     console.log(cmd)
 				  })
-		 $scope.getData();
+        // $scope.getData();
     }
 
     $scope.addDevice = function(addr, type) {
@@ -141,7 +141,7 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
 				  }).then(function (answ) {
                     console.log(cmd)
 				  })
-		$scope.getData();
+        // $scope.getData();
     }
 
     $scope.setValue = function(addr, reg, value){
@@ -152,28 +152,29 @@ app.controller('manageCtrl', function($scope, $http, $timeout) {
                 "addr": addr,
                 "reg": reg,
                 "value": value
-                }
+            }
             };
-            $http({ url: "/actionAddr",
-                method: 'POST',
-                params: { data:cmd }
-              }).then(function (answ) {
-                console.log(cmd)
-              })
-    }
-    $scope.getValues = function() {
-    $timeout(function () {
         $http({
-            url: 'data.json?r=' + Math.random(),
-            method: 'GET'
+            url: "/actionAddr",
+            method: 'POST',
+            params: {data: cmd}
         }).then(function (answ) {
-            $scope.network = answ.data.network;
-            // console.log($scope.setupData)
-        });
-       $scope.getValues();
-    }, 100 );
+            console.log(cmd)
+        })
     }
-    $scope.getValues();
+    // $scope.getValues = function() {
+    // $timeout(function () {
+    //     $http({
+    //         url: 'data.json?r=' + Math.random(),
+    //         method: 'GET'
+    //     }).then(function (answ) {
+    //         $scope.network = answ.data.network;
+    //         // console.log($scope.setupData)
+    //     });
+    //    $scope.getValues();
+    // }, 100 );
+    // }
+    // $scope.getValues();
     $scope.getTypes();
     $scope.getData();
 });

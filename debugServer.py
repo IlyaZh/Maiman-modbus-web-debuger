@@ -85,7 +85,7 @@ class ThreadDevicesNetwork(threading.Thread):
                     # data[reg] = self.devices[addr].__data__[reg]
                     data[reg] = device.get_register(reg, 1).get(reg)
                 devices[addr] = {
-                    "device": device.config,
+                    "device": device.get_config(),
                     "data": data  # self.devices[addr].__device__
                 }
         return devices
@@ -208,7 +208,7 @@ class ThreadDevicesNetwork(threading.Thread):
         msg = ''
         for i in rec:
             msg += "{:02X}h ".format(i)
-        # print("received data:", msg)
+        print("received data:", msg)
         answer = bytearray()
 
         if crc16(rec) != 0:
@@ -257,7 +257,7 @@ class ThreadDevicesNetwork(threading.Thread):
                 msg = ''
                 for i in answer:
                     msg += "{:02X}h ".format(i)
-                # print("sent data:", msg)
+                print("sent data:", msg)
 
             return answer
         except:

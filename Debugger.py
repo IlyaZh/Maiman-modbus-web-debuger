@@ -130,6 +130,7 @@ if __name__ == "__main__":
     threadNetwork.start()
 
     # DEBUG ONLY
-    threadNetwork.add(2, 257)
-    threadNetwork.add(1, 257)
+    # threadNetwork.add(2, 257)
+    # threadNetwork.add(1, 257)
+    threadNetwork.add(5, 17)
     app.run(host='0.0.0.0', port=80)

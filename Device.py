@@ -1,21 +1,21 @@
 
 class Device:
-    config = None
+    __config__ = None
     __data__ = {}
     id = 0
 
     def __init__(self, device_model, defaults):
-        self.config = device_model
+        self.__config__ = device_model
         self.__data__ = {}
-        self.id = self.config.get('id', 0)
+        self.id = self.__config__.get('id', 0)
         # self.config.get('id', 0)
         # self.name = self.config.get('name', "")
         # self.content = self.config.get('content', dict(image=None, description='', link='#'))
 
-        self.__data__[1] = self.config.get('id', 0)
-        if any(self.config):
-            for cmd in self.config['commands']:
-                reg = self.config['commands'][cmd]
+        self.__data__[1] = self.__config__.get('id', 0)
+        if any(self.__config__):
+            for cmd in self.__config__['commands']:
+                reg = self.__config__['commands'][cmd]
                 code = reg.get('code')
                 if any(defaults):
                     if defaults.get(str(hex(int(code, 16)))[2:]) is not None:
@@ -25,6 +25,9 @@ class Device:
                         self.__data__[int(code, 16)] = 0
                 else:
                     self.__data__[int(code, 16)] = 0
+
+    def get_config(self):
+        return self.__config__
 
     def get_commands_list(self):
         list = []
