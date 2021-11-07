@@ -11,6 +11,8 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 app = Flask(__name__)
 
+port = 0
+
 
 @app.route('/')
 def index():
@@ -70,7 +72,7 @@ def device_setup():
 
 
 @app.route('/actionAddr', methods=['POST'])
-def commandHandler():
+def command_handler():
     data1 = json.loads(request.args.get('data'))
 
     if data1['cmd'] == 'del':
@@ -130,7 +132,7 @@ if __name__ == "__main__":
     threadNetwork.start()
 
     # DEBUG ONLY
-    # threadNetwork.add(2, 257)
-    # threadNetwork.add(1, 257)
-    threadNetwork.add(5, 17)
+    threadNetwork.add(2, 257)
+    threadNetwork.add(1, 0x12)
+    threadNetwork.add(5, 0x10)
     app.run(host='0.0.0.0', port=80)

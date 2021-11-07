@@ -208,7 +208,7 @@ class ThreadDevicesNetwork(threading.Thread):
         msg = ''
         for i in rec:
             msg += "{:02X}h ".format(i)
-        print("received data:", msg)
+        # print("received data:", msg)
         answer = bytearray()
 
         if crc16(rec) != 0:
@@ -257,7 +257,7 @@ class ThreadDevicesNetwork(threading.Thread):
                 msg = ''
                 for i in answer:
                     msg += "{:02X}h ".format(i)
-                print("sent data:", msg)
+                # print("sent data:", msg)
 
             return answer
         except:
