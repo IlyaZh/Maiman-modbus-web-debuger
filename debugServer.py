@@ -55,7 +55,7 @@ class ThreadDevicesNetwork(threading.Thread):
         return device
 
     def remove(self, addr):
-        self.devices[addr] = Device(0, {}, {})
+        self.devices[addr] = Device({}, {})
         '''{
             # 'device': self.device_config.get(0, None),
             'device': None,
@@ -132,9 +132,11 @@ class ThreadDevicesNetwork(threading.Thread):
         self.port_changed = True
 
     def modify(self, addr: int, reg: int, value: int):
-        if self.devices.get(addr) is not None:
-            if self.devices.get(addr).__data__.get(reg) is not None:
-                self.devices.get(addr).set_register(reg, value)
+        dev = self.devices.get(addr)
+        if dev is not None:
+            if dev.id != 0:
+                if self.devices.get(addr).__data__.get(reg) is not None:
+                    self.devices.get(addr).set_register(reg, value)
         '''
         if self.devices.at(addr) is not None:
             if self.devices.at(addr).at('data').at(reg) is not None:
@@ -163,7 +165,7 @@ class ThreadDevicesNetwork(threading.Thread):
                     while True:
                         try:
                             data = conn.recv(1024)
-                            # print('\n rx (', len(data), ") ", data, '\n')
+                            print('\n rx (', len(data), ") ", data, '\n')
                             if not data:
                                 break
                             answer = self.modbus_handle(data)
@@ -172,7 +174,7 @@ class ThreadDevicesNetwork(threading.Thread):
                             # print("Tx len = {:d}".format(length))
                             if length > 0:
                                 conn.sendall(answer)
-                                # print("tx ", answer, '\n')
+                                print("tx ", answer, '\n')
                         except:
                             pass
 
@@ -223,11 +225,20 @@ class ThreadDevicesNetwork(threading.Thread):
                 self.device_list[addr]['timeout'] = 0
                 answer.append(addr)
                 if cmd == 0x03:
-                    answer.extend(self.modbus_read(addr, rec))
+                    dev_data = self.modbus_read(addr, rec)
+                    if len(dev_data) == 0:
+                        return {}
+                    answer.extend(dev_data)
                 elif cmd == 0x06:
-                    answer.extend(self.modbus_write_signle(addr, rec))
+                    dev_data = self.modbus_write_signle(addr, rec)
+                    if len(dev_data) == 0:
+                        return {}
+                    answer.extend(dev_data)
                 elif cmd == 0x10:
-                    answer.extend(self.modbus_write_mult(addr, rec))
+                    dev_data = self.modbus_write_mult(addr, rec)
+                    if len(dev_data) == 0:
+                        return {}
+                    answer.extend(dev_data)
                 else:
                     # Че за команда? Возвращаем ошибку
                     answer.append(0x80 | cmd)
@@ -273,23 +284,23 @@ class ThreadDevicesNetwork(threading.Thread):
         is_error = False
         device = self.devices.get(addr)
         devData = {}
-        if device is not None:
+        if device is not None and device.id != 0:
             devData = device.get_register(reg, count)
             if len(devData) == 0:
                 is_error = True
 
-        if is_error is False:
-            answer.append(cmd)
-            answer.append(count * 2)
+            if is_error is False:
+                answer.append(cmd)
+                answer.append(count * 2)
 
-            for reg in devData:
-                value = devData[reg]
-                answer.append((value >> 8) & 0xff)
-                answer.append(value & 0xff)
-        else:
-            # нет такого регистра. Ошибка!
-            answer.append(0x80 | cmd)
-            answer.append(0x02)
+                for reg in devData:
+                    value = devData[reg]
+                    answer.append((value >> 8) & 0xff)
+                    answer.append(value & 0xff)
+            else:
+                # нет такого регистра. Ошибка!
+                answer.append(0x80 | cmd)
+                answer.append(0x02)
 
         return answer
 
@@ -301,7 +312,7 @@ class ThreadDevicesNetwork(threading.Thread):
         print("Write reg=", reg, " value=", value)
 
         device = self.devices.get(addr)
-        if device is not None:
+        if device is not None and device.id != 0:
             if device.set_register(reg, value):
                 answer.append(0x06)
                 answer.append((reg >> 8) & 0xff)
@@ -313,10 +324,6 @@ class ThreadDevicesNetwork(threading.Thread):
                 # нет такого регистра. Ошибка!
                 answer.append(0x86)
                 answer.append(0x02)
-        else:
-            # нет такого регистра. Ошибка!
-            answer.append(0x86)
-            answer.append(0x02)
 
         return answer
 
@@ -329,7 +336,7 @@ class ThreadDevicesNetwork(threading.Thread):
         is_error = False
         for i in range(int(byte_count / 2)):
             device = self.devices.get(addr)
-            if device is not None:
+            if device is not None and device.id != 0:
                 if device.get_register(reg, i).get(reg) is None:
                     is_error = True
                     break
